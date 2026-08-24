@@ -128,15 +128,18 @@ function validate(fields: EntryFields, photos: File[]) {
   if (photos.length > MAX_PHOTOS) return `Choose no more than ${MAX_PHOTOS} photos.`;
   if (
     fields.contentType &&
-    !["album", "single", "podcast", "podcast-episode", "other"].includes(fields.contentType)
+    ![
+      "album", "single", "podcast", "podcast-episode",
+      "book", "article", "line", "lyric", "passage", "other",
+    ].includes(fields.contentType)
   ) {
-    return "Choose a known listening type.";
+    return "Choose a known item type.";
   }
   if (fields.externalUrl) {
     try {
       const url = new URL(fields.externalUrl);
       if (url.protocol !== "https:" && url.protocol !== "http:") {
-        return "Listening links must start with http:// or https://.";
+        return "External links must start with http:// or https://.";
       }
     } catch {
       return "Add a complete listening link.";

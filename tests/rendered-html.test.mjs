@@ -31,6 +31,7 @@ test("server-renders the interactive desk cover", async () => {
   assert.match(html, /href="\/sessions\/favorite-drink"/i);
   assert.match(html, /href="\/sessions\/things-i-dont-want-to-forget"/i);
   assert.match(html, /href="\/sessions\/things-i-listened-to"/i);
+  assert.match(html, /href="\/sessions\/pages-i-kept"/i);
   assert.match(html, /target="_top"/i);
   assert.match(html, /aria-label="Open little things I noticed"/i);
   assert.match(html, /class="plant-water-label"/i);
@@ -165,7 +166,42 @@ test("keeps the session rooms physical and adds the listening wall", async () =>
   assert.match(studioClient, /name="externalUrl"/);
   assert.match(store, /content_type AS contentType/);
   assert.match(schema, /contentType: text\("content_type"\)/);
-  assert.match(api, /Listening links must start/);
+  assert.match(api, /External links must start/);
   assert.match(migration, /ADD `content_type` text/);
   assert.match(migration, /ADD `external_url` text/);
+});
+
+test("opens the book stack into a mixed archive of kept pages", async () => {
+  const [homePage, pagesPage, archive, studio, configs, styles, api] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/sessions/pages-i-kept/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/sessions/pages-i-kept/PagesArchive.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL("../app/studio/little-things-i-noticed/StudioClient.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(new URL("../lib/illustrated-sessions.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(
+      new URL("../app/api/sessions/[slug]/entries/route.ts", import.meta.url),
+      "utf8",
+    ),
+  ]);
+
+  assert.match(homePage, /href="\/sessions\/pages-i-kept"/);
+  assert.match(pagesPage, /getEntries\("pages-i-kept"\)/);
+  assert.match(pagesPage, /PagesArchive/);
+  assert.match(archive, /book → opens|book-object/);
+  assert.match(archive, /close the book/);
+  assert.match(archive, /fold it back/);
+  assert.match(archive, /read \/ find this ↗/);
+  assert.match(archive, /kept-original-words/);
+  assert.match(archive, /kept-my-thought/);
+  assert.match(studio, /reading-fields/);
+  assert.match(studio, /value="book"/);
+  assert.match(studio, /value="lyric"/);
+  assert.match(configs, /slug: "pages-i-kept"/);
+  assert.match(api, /"book", "article", "line", "lyric", "passage"/);
+  assert.match(styles, /\.pages-hotspot\s*{[^}]*clip-path:/s);
+  assert.match(styles, /\.made-hotspot\s*{[^}]*width:\s*4\.7%/s);
 });

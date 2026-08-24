@@ -3,7 +3,8 @@ export type IllustratedSessionConfig = {
     | "things-i-made"
     | "favorite-drink"
     | "things-i-dont-want-to-forget"
-    | "things-i-listened-to";
+    | "things-i-listened-to"
+    | "pages-i-kept";
   name: string;
   theme: string;
   kicker: string;
@@ -16,7 +17,7 @@ export type IllustratedSessionConfig = {
   collectionLabel: string;
   itemNoun: string;
   storageLabel: string;
-  editorKind?: "listening";
+  editorKind?: "listening" | "reading";
 };
 
 export const illustratedSessions: IllustratedSessionConfig[] = [
@@ -80,6 +81,22 @@ export const illustratedSessions: IllustratedSessionConfig[] = [
     itemNoun: "listening thing",
     storageLabel: "the listening wall",
     editorKind: "listening",
+  },
+  {
+    slug: "pages-i-kept",
+    name: "pages I kept",
+    theme: "pages-session",
+    kicker: "from the book stack",
+    intro: "a messy little archive of words and pages that stayed with me",
+    emptyText: "no sentence has been left between these pages yet.",
+    emptyHint: "the pencil is waiting.",
+    addLabel: "leave something here",
+    studioTitle: "between the kept pages",
+    freshLabel: "something I read and wanted to keep",
+    collectionLabel: "words already left in the pile",
+    itemNoun: "kept page",
+    storageLabel: "the reading pile",
+    editorKind: "reading",
   },
 ];
 

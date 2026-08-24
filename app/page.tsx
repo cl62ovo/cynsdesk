@@ -46,6 +46,15 @@ export default function Home() {
         </a>
 
         <a
+          className="desk-hotspot pages-hotspot"
+          href="/sessions/pages-i-kept"
+          target="_top"
+          aria-label="Open pages I kept"
+        >
+          <span className="sr-only">pages I kept</span>
+        </a>
+
+        <a
           className="desk-hotspot drink-hotspot"
           href="/sessions/favorite-drink"
           target="_top"

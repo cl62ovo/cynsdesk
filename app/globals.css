@@ -2283,3 +2283,658 @@ body {
   outline: 2px dashed #8c5b50;
   outline-offset: 7px;
 }
+
+/* The left book stack is separate from the thread spool sitting on top of it. */
+.pages-hotspot {
+  left: 3.8%;
+  top: 59%;
+  width: 18.2%;
+  height: 13.2%;
+  border-radius: 20% 16% 25% 17%;
+  clip-path: polygon(0 0, 43% 0, 43% 61%, 72% 61%, 72% 0, 100% 0, 100% 100%, 0 100%);
+  transform: rotate(-1deg);
+}
+
+.pages-hotspot::before {
+  content: "open";
+  position: absolute;
+  left: 7%;
+  top: -21%;
+  z-index: 2;
+  color: #8c6252;
+  font: clamp(9px, 1vw, 13px)/1 "Comic Sans MS", "Bradley Hand", cursive;
+  opacity: 0;
+  transform: rotate(-7deg) translateY(5px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.pages-hotspot:hover::before,
+.pages-hotspot:focus-visible::before {
+  opacity: .9;
+  transform: rotate(-3deg) translateY(0);
+}
+
+.pages-hotspot:hover::after,
+.pages-hotspot:focus-visible::after {
+  transform: rotate(1deg) scale(1.025);
+}
+
+/* Pages I kept: a mixed reading pile where small lines live beside whole books. */
+.pages-room {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  padding-bottom: 90px;
+  background:
+    radial-gradient(circle at 83% 9%, rgba(255,255,255,.64), transparent 27rem),
+    repeating-linear-gradient(0deg, transparent 0 31px, rgba(89,71,54,.026) 32px),
+    #ebe6da;
+  color: #44382f;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.pages-room-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(88deg, transparent 49.7%, rgba(81,62,46,.02) 50%, transparent 50.3%),
+    radial-gradient(circle at 22% 57%, rgba(119,88,62,.04) 0 2px, transparent 3px);
+  background-size: auto, 47px 43px;
+}
+
+.pages-heading {
+  position: relative;
+  width: min(960px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 48px 15% 17px 18px;
+  text-align: right;
+}
+
+.pages-heading > p {
+  margin: 3px 0;
+  color: #7c6655;
+  font: 700 10px/1.2 "Courier New", monospace;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.pages-heading h1 {
+  margin: 0;
+  font: 400 clamp(35px, 5.4vw, 59px)/1.05 "Comic Sans MS", "Bradley Hand", cursive;
+  letter-spacing: -.045em;
+}
+
+.pages-heading > small {
+  display: block;
+  margin-top: 8px;
+  color: #746659;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.little-book-doodle {
+  position: absolute;
+  right: 6%;
+  top: 51px;
+  width: 68px;
+  height: 48px;
+  border: 2px solid #675548;
+  border-radius: 2px 7px 7px 2px;
+  background: #a9b3a4;
+  box-shadow: -6px 5px 0 #decda9, -7px 6px 0 1px #675548;
+  transform: rotate(5deg);
+}
+
+.little-book-doodle::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 0;
+  bottom: 0;
+  border-left: 2px solid rgba(80,67,56,.62);
+}
+
+.little-book-doodle::after {
+  content: "";
+  position: absolute;
+  right: 13px;
+  top: -8px;
+  width: 9px;
+  height: 24px;
+  background: #c87968;
+  transform: rotate(-2deg);
+}
+
+.pages-archive {
+  position: relative;
+  display: grid;
+  width: min(1180px, calc(100% - 38px));
+  margin: 32px auto 65px;
+  grid-template-columns: repeat(14, minmax(0, 1fr));
+  grid-auto-flow: row dense;
+  gap: 74px 8px;
+  align-items: start;
+}
+
+.archive-pencil {
+  position: absolute;
+  right: 4%;
+  top: 29%;
+  width: 138px;
+  height: 8px;
+  border: 1px solid rgba(79,60,46,.58);
+  border-radius: 4px 1px 1px 4px;
+  background: linear-gradient(90deg, #d5b66d 0 87%, #c5796e 88% 96%, #ddd1bb 97%);
+  transform: rotate(17deg);
+}
+
+.archive-thread {
+  position: absolute;
+  left: 7%;
+  top: 62%;
+  width: 67%;
+  height: 78px;
+  border-bottom: 2px solid rgba(135,84,64,.21);
+  border-radius: 0 0 50% 45%;
+  transform: rotate(-4deg);
+}
+
+.kept-piece {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.kept-piece-1 { grid-column: 1 / 6; transform: rotate(-2deg); }
+.kept-piece-2 { grid-column: 6 / 10; margin-top: 98px; transform: rotate(1.6deg); }
+.kept-piece-3 { grid-column: 10 / 15; margin-top: 17px; transform: rotate(-1deg); }
+.kept-piece-4 { grid-column: 2 / 5; margin-top: -33px; transform: rotate(2.4deg); }
+.kept-piece-5 { grid-column: 5 / 11; margin-top: 47px; transform: rotate(-1.6deg); }
+.kept-piece-6 { grid-column: 11 / 15; margin-top: -14px; transform: rotate(2deg); }
+.kept-piece-7 { grid-column: 1 / 5; margin-top: 86px; transform: rotate(-2.3deg); }
+.kept-piece-8 { grid-column: 5 / 9; margin-top: -12px; transform: rotate(1deg); }
+.kept-piece-9 { grid-column: 9 / 15; margin-top: 68px; transform: rotate(-1.8deg); }
+.kept-piece-10 { grid-column: 3 / 10; margin-top: 8px; transform: rotate(1.4deg); }
+
+.book-object {
+  position: relative;
+  display: block;
+  width: min(245px, 88%);
+  aspect-ratio: 4 / 5;
+  margin-inline: auto;
+  border: 2px solid #5e4d40;
+  border-radius: 3px 11px 10px 3px;
+  background: #8d9b8d;
+  box-shadow: -9px 9px 0 #ddcfb0, -10px 10px 0 1px #6f5a49, 7px 12px 14px rgba(57,43,33,.2);
+  transform: perspective(650px) rotateY(-7deg);
+  transform-origin: left center;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.kept-book:hover .book-object,
+.kept-book:focus-visible .book-object {
+  box-shadow: -3px 4px 0 #ddcfb0, -4px 5px 0 1px #6f5a49, 10px 14px 17px rgba(57,43,33,.22);
+  transform: perspective(650px) rotateY(-18deg) translateY(-3px);
+}
+
+.book-object > img,
+.book-blank-cover {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  place-items: center;
+  border-radius: 2px 9px 8px 2px;
+  object-fit: cover;
+}
+
+.book-blank-cover {
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.12), transparent 17%),
+    #91a092;
+  color: #f5eddb;
+  font: 19px/1.2 "Comic Sans MS", "Bradley Hand", cursive;
+  text-align: center;
+}
+
+.book-page-edges {
+  position: absolute;
+  right: -8px;
+  top: 8px;
+  bottom: 8px;
+  z-index: -1;
+  width: 12px;
+  border: 1px solid #725d4a;
+  border-radius: 0 7px 7px 0;
+  background: repeating-linear-gradient(0deg, #e7ddc5 0 3px, #cdbf9e 4px);
+}
+
+.book-bookmark {
+  position: absolute;
+  right: 23%;
+  top: -12px;
+  width: 16px;
+  height: 51px;
+  background: #c77667;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 83%, 0 100%);
+  transform: rotate(2deg);
+}
+
+.folded-article {
+  position: relative;
+  display: grid;
+  width: min(285px, 94%);
+  margin-inline: auto;
+  padding: 28px 25px 32px;
+  background:
+    linear-gradient(145deg, transparent 0 49%, rgba(87,68,52,.08) 50%, transparent 51%),
+    repeating-linear-gradient(0deg, transparent 0 20px, rgba(87,68,52,.045) 21px),
+    #f2ead9;
+  box-shadow: 5px 8px 10px rgba(57,43,33,.16);
+  clip-path: polygon(0 2%, 97% 0, 100% 96%, 93% 100%, 2% 97%);
+}
+
+.folded-article::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid rgba(89,69,52,.11);
+}
+
+.folded-article img {
+  width: 100%;
+  max-height: 150px;
+  margin-bottom: 15px;
+  object-fit: cover;
+  filter: saturate(.78) sepia(.08);
+}
+
+.folded-article strong { font: 20px/1.16 "Comic Sans MS", "Bradley Hand", cursive; }
+.folded-article small { margin-top: 5px; color: #846e5d; font-size: 10px; }
+.folded-article em {
+  display: -webkit-box;
+  margin-top: 15px;
+  overflow: hidden;
+  color: #5e5248;
+  font-size: 12px;
+  font-style: normal;
+  line-height: 1.48;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+}
+
+.paperclip {
+  position: absolute;
+  right: 22px;
+  top: -12px;
+  z-index: 4;
+  width: 13px;
+  height: 41px;
+  border: 2px solid #837b70;
+  border-radius: 9px;
+  transform: rotate(9deg);
+}
+
+.tiny-writing {
+  position: relative;
+  display: grid;
+  width: min(250px, 96%);
+  margin-inline: auto;
+  padding: 26px 21px 22px;
+  background: #eee0b5;
+  box-shadow: 3px 5px 7px rgba(58,43,32,.14);
+  clip-path: polygon(2% 4%, 100% 0, 96% 93%, 89% 100%, 4% 96%);
+}
+
+.tiny-lyric {
+  width: min(190px, 88%);
+  padding: 35px 17px 27px;
+  background: #e3d9c8;
+  clip-path: polygon(0 2%, 95% 0, 100% 98%, 8% 94%);
+}
+
+.tiny-writing q {
+  color: #51453c;
+  font: 16px/1.5 "Comic Sans MS", "Bradley Hand", cursive;
+  quotes: none;
+  white-space: pre-wrap;
+}
+
+.tiny-writing small { margin-top: 13px; color: #8d6859; font: 10px/1.3 Georgia, serif; }
+.tiny-tape {
+  position: absolute;
+  left: 42%;
+  top: -10px;
+  width: 61px;
+  height: 21px;
+  background: rgba(212,173,137,.72);
+  transform: rotate(-4deg);
+}
+
+.loose-passage {
+  position: relative;
+  display: grid;
+  width: min(340px, 98%);
+  min-height: 250px;
+  margin-inline: auto;
+  padding: 35px 32px 30px;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 25px, rgba(88,69,53,.06) 26px),
+    #f4ecda;
+  box-shadow: 5px 8px 11px rgba(57,43,33,.16);
+  clip-path: polygon(1% 0, 97% 2%, 100% 94%, 94% 100%, 2% 97%);
+}
+
+.loose-passage strong { margin-bottom: 17px; font: 19px/1.2 "Comic Sans MS", cursive; }
+.loose-passage q {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #554a41;
+  font-size: 14px;
+  line-height: 1.62;
+  quotes: none;
+  white-space: pre-wrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 9;
+}
+
+.loose-passage small { margin-top: 14px; color: #8a6b59; font-style: italic; }
+.passage-fold {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, #d8cab0 0 49%, transparent 50%);
+}
+
+.other-page-scrap {
+  display: grid;
+  width: min(270px, 95%);
+  margin-inline: auto;
+  padding: 22px;
+  background: #e8deca;
+  box-shadow: 4px 6px 8px rgba(57,43,33,.15);
+  clip-path: polygon(0 3%, 96% 0, 100% 96%, 3% 100%);
+}
+
+.other-page-scrap img { width: 100%; max-height: 170px; margin-bottom: 13px; object-fit: cover; }
+.other-page-scrap strong { font: 18px/1.2 "Comic Sans MS", cursive; }
+.other-page-scrap q { margin-top: 13px; font-size: 13px; line-height: 1.5; quotes: none; }
+
+.archive-personal-note {
+  position: relative;
+  z-index: 6;
+  display: grid;
+  width: fit-content;
+  max-width: 72%;
+  margin: -10px 3% 0 auto;
+  padding: 11px 13px 10px;
+  background: #d9d591;
+  box-shadow: 2px 3px 5px rgba(57,43,32,.13);
+  color: #5c4c40;
+  font: 11px/1.42 "Comic Sans MS", "Bradley Hand", cursive;
+  transform: rotate(2deg);
+}
+
+.archive-personal-note small {
+  margin-bottom: 4px;
+  color: #9b5f52;
+  font: 700 8px/1.2 "Courier New", monospace;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.kept-piece:nth-child(3n) .archive-personal-note { margin-left: 2%; transform: rotate(-2.5deg); }
+.kept-piece:nth-child(4n) .tiny-writing { margin-left: 0; }
+
+.pages-add-sheet {
+  position: relative;
+  display: grid;
+  grid-column: 6 / 10;
+  width: 185px;
+  min-height: 230px;
+  margin: 36px auto 0;
+  padding: 28px 19px;
+  place-items: end center;
+  border: 1px dashed rgba(75,59,47,.42);
+  background: rgba(242,235,220,.54);
+  color: #765f4f;
+  font: 12px/1.4 "Comic Sans MS", "Bradley Hand", cursive;
+  text-align: center;
+  text-decoration: none;
+  transform: rotate(-2deg);
+  transition: transform .2s ease, background .2s ease;
+}
+
+.pages-add-sheet > span {
+  position: absolute;
+  left: 17px;
+  right: 17px;
+  top: 20px;
+  height: 145px;
+  border-bottom: 1px solid rgba(79,61,47,.18);
+  background: repeating-linear-gradient(0deg, transparent 0 22px, rgba(79,61,47,.09) 23px);
+}
+
+.pages-add-sheet:hover { background: rgba(247,239,221,.8); transform: rotate(1deg) translateY(-3px); }
+
+.quiet-pages-pile {
+  display: grid;
+  width: min(300px, calc(100% - 42px));
+  margin: 50px auto;
+  padding: 28px 23px;
+  place-items: center;
+  background: #eee5d2;
+  box-shadow: 5px 7px 9px rgba(57,43,33,.14);
+  color: #756557;
+  font-family: "Comic Sans MS", "Bradley Hand", cursive;
+  text-align: center;
+  transform: rotate(-1.4deg);
+}
+
+.quiet-pages-pile > span {
+  width: 92px;
+  height: 70px;
+  border: 1px dashed rgba(78,61,47,.28);
+  background: rgba(255,255,255,.16);
+}
+
+.quiet-pages-pile p { margin: 17px 0 4px; }
+.quiet-pages-pile small { color: #978579; }
+
+.pages-detail-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  padding: 25px;
+  place-items: center;
+  overflow-y: auto;
+  background: rgba(44,37,32,.55);
+  backdrop-filter: blur(2px);
+}
+
+.pages-detail {
+  position: relative;
+  display: grid;
+  width: min(820px, 100%);
+  max-height: calc(100vh - 50px);
+  overflow-y: auto;
+  padding: 39px 42px 42px;
+  grid-template-columns: minmax(180px, .72fr) minmax(280px, 1.28fr);
+  gap: 42px;
+  background:
+    linear-gradient(90deg, transparent 49.7%, rgba(91,70,52,.12) 50%, transparent 50.3%),
+    repeating-linear-gradient(0deg, transparent 0 27px, rgba(91,70,52,.045) 28px),
+    #f1e9d8;
+  box-shadow: 12px 18px 45px rgba(29,23,19,.4);
+  transform: rotate(-.3deg);
+}
+
+.pages-detail-book {
+  border-radius: 3px 12px 12px 3px;
+  box-shadow: -10px 10px 0 #cbbd9f, 12px 18px 45px rgba(29,23,19,.4);
+  transform: perspective(900px) rotateX(.5deg);
+}
+
+.pages-detail-article { clip-path: polygon(0 1%, 99% 0, 100% 97%, 96% 100%, 2% 99%); }
+.pages-detail-line,
+.pages-detail-lyric {
+  width: min(650px, 100%);
+  background: #eee1bd;
+  clip-path: polygon(1% 3%, 99% 0, 97% 94%, 91% 100%, 2% 97%);
+}
+
+.detail-bookmark {
+  position: absolute;
+  right: 12%;
+  top: -1px;
+  width: 20px;
+  height: 60px;
+  background: #be7062;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+}
+
+.pages-detail-source img {
+  display: block;
+  width: 100%;
+  max-height: 310px;
+  margin-bottom: 18px;
+  object-fit: cover;
+  box-shadow: 3px 5px 8px rgba(57,43,33,.16);
+  transform: rotate(-1deg);
+}
+
+.pages-detail-source > p {
+  margin: 0 0 5px;
+  color: #986356;
+  font: 700 9px/1.2 "Courier New", monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.pages-detail-source h2 {
+  margin: 0;
+  font: 400 clamp(25px, 4vw, 38px)/1.08 "Comic Sans MS", "Bradley Hand", cursive;
+}
+
+.pages-detail-source h3 { margin: 9px 0 5px; color: #6e5c4e; font-size: 14px; font-style: italic; font-weight: 400; }
+.pages-detail-source time { color: #957565; font: 9px/1.2 "Courier New", monospace; text-transform: uppercase; }
+
+.kept-original-words > small,
+.kept-my-thought > small {
+  color: #966055;
+  font: 700 8px/1.2 "Courier New", monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.kept-original-words blockquote {
+  margin: 10px 0 22px;
+  padding-left: 19px;
+  border-left: 2px solid rgba(103,78,59,.22);
+  color: #4f443b;
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.kept-original-words blockquote::first-line { text-decoration: underline rgba(177,103,87,.35) 3px; }
+
+.kept-my-thought {
+  margin: 25px -5px 18px 16px;
+  padding: 15px 17px 14px;
+  background: #d9d591;
+  box-shadow: 2px 4px 6px rgba(57,43,32,.13);
+  transform: rotate(1.2deg);
+}
+
+.kept-my-thought p {
+  margin: 7px 0 0;
+  color: #5a493e;
+  font: 13px/1.5 "Comic Sans MS", "Bradley Hand", cursive;
+  white-space: pre-wrap;
+}
+
+.pages-detail-reading > a,
+.pages-detail-reading > button {
+  display: inline-block;
+  margin: 8px 14px 0 0;
+  padding: 8px 10px;
+  border: 0;
+  border-bottom: 1px solid rgba(103,76,58,.45);
+  background: transparent;
+  color: #915b50;
+  cursor: pointer;
+  font: 12px/1.2 "Comic Sans MS", "Bradley Hand", cursive;
+  text-decoration: none;
+}
+
+.pages-detail-reading > button { color: #6c5b4e; }
+
+.pages-session {
+  --room-paper: #eee4cf;
+  --room-accent: #7b6655;
+  --room-tape: rgba(203, 169, 132, .74);
+  background: #ebe6da;
+}
+
+.illustrated-studio.pages-session {
+  --room-paper: #eee4cf;
+  --room-accent: #7b6655;
+  --room-tape: rgba(203, 169, 132, .74);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 31px, rgba(89,71,54,.03) 32px),
+    #ebe6da;
+}
+
+.kept-piece:focus-visible,
+.pages-add-sheet:focus-visible {
+  outline: 2px dashed #886756;
+  outline-offset: 8px;
+}
+
+@media (max-width: 840px) {
+  .pages-archive { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+  .kept-piece:nth-of-type(odd) { grid-column: 1 / 6; margin: 0; }
+  .kept-piece:nth-of-type(even) { grid-column: 4 / 9; margin: 56px 0 0; }
+  .pages-add-sheet { grid-column: 2 / 5; }
+}
+
+@media (max-width: 620px) {
+  .pages-heading { padding: 92px 15px 22px; text-align: center; }
+  .little-book-doodle { position: relative; right: auto; top: auto; margin: 0 auto 17px; }
+  .pages-archive { display: block; width: calc(100% - 30px); }
+  .archive-pencil,
+  .archive-thread { display: none; }
+  .kept-piece,
+  .kept-piece:nth-of-type(odd),
+  .kept-piece:nth-of-type(even) {
+    width: 91%;
+    margin: 0 auto 79px;
+    transform: rotate(-1.4deg);
+  }
+  .kept-piece:nth-of-type(even) { margin-left: 9%; transform: rotate(1.5deg); }
+  .pages-add-sheet { width: 170px; min-height: 215px; margin: 0 auto 65px; }
+  .pages-detail { padding: 31px 23px 34px; grid-template-columns: 1fr; gap: 27px; }
+  .pages-detail-source img { width: min(240px, 88%); margin-inline: auto; }
+  .pages-detail-book { box-shadow: -5px 6px 0 #cbbd9f, 8px 13px 35px rgba(29,23,19,.38); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book-object,
+  .pages-add-sheet,
+  .pages-hotspot::before { transition: none; }
+}
