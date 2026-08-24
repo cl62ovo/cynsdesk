@@ -74,7 +74,19 @@ export async function POST(request: Request) {
   });
 
   if (!response.ok) {
-    return Response.json({ error: "The box could not make a reflection just now. Your original entries are untouched." }, { status: 502 });
+    const upstream = (await response.json().catch(() => null)) as {
+      error?: { code?: string | null; message?: string | null; type?: string | null };
+    } | null;
+    const code = upstream?.error?.code || upstream?.error?.type || `http_${response.status}`;
+    console.error("OpenAI reflection request failed", {
+      status: response.status,
+      code,
+      requestId: response.headers.get("x-request-id"),
+    });
+    return Response.json(
+      { error: friendlyOpenAIError(response.status, code), diagnostic: code },
+      { status: 502 },
+    );
   }
 
   const result = (await response.json()) as { output?: Array<{ content?: Array<{ type?: string; text?: string }> }> };
@@ -157,4 +169,20 @@ function keyFor(granularity: PeriodGranularity, start: string) {
 function runtimeText(key: string) {
   const value = (env as typeof env & Record<string, unknown>)[key];
   return typeof value === "string" ? value.trim() : "";
+}
+
+function friendlyOpenAIError(status: number, code: string) {
+  if (status === 401 || code.includes("api_key")) {
+    return "The private AI key was rejected. Your original entries are untouched.";
+  }
+  if (status === 429 || code.includes("quota") || code.includes("billing")) {
+    return "The AI account needs API credit or a higher usage limit before the box can reflect. Your original entries are untouched.";
+  }
+  if (status === 403 || code.includes("permission")) {
+    return "The private AI key does not have permission to make reflections yet. Your original entries are untouched.";
+  }
+  if (status === 404 || code.includes("model")) {
+    return "The selected AI model is not available to this project yet. Your original entries are untouched.";
+  }
+  return "The box could not make a reflection just now. Your original entries are untouched.";
 }
