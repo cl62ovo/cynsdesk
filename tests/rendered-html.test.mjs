@@ -36,7 +36,7 @@ test("server-renders the interactive desk cover", async () => {
 });
 
 test("keeps the first session on the reusable content system", async () => {
-  const [homePage, sessionPage, studio, studioClient, schema, registry] = await Promise.all([
+  const [homePage, sessionPage, studio, studioClient, apiRoute, contentStore, schema, registry] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../app/sessions/little-things-i-noticed/page.tsx", import.meta.url),
@@ -50,13 +50,24 @@ test("keeps the first session on the reusable content system", async () => {
       new URL("../app/studio/little-things-i-noticed/StudioClient.tsx", import.meta.url),
       "utf8",
     ),
+    readFile(
+      new URL("../app/api/sessions/[slug]/entries/route.ts", import.meta.url),
+      "utf8",
+    ),
+    readFile(new URL("../lib/content-store.ts", import.meta.url), "utf8"),
     readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
     readFile(new URL("../lib/sessions.ts", import.meta.url), "utf8"),
   ]);
 
   assert.match(sessionPage, /getEntries\("little-things-i-noticed"\)/);
   assert.match(sessionPage, /owner-add-polaroid/);
+  assert.match(sessionPage, /index % 8/);
   assert.match(studio, /getOwnerId/);
+  assert.match(studioClient, /method: "DELETE"/);
+  assert.match(studioClient, /window\.confirm/);
+  assert.match(apiRoute, /export async function DELETE/);
+  assert.match(contentStore, /export async function deleteEntry/);
+  assert.match(contentStore, /mediaBucket\(\)\.delete/);
   assert.match(schema, /entryImages/);
   assert.match(schema, /longText/);
   assert.match(registry, /show me sth/);

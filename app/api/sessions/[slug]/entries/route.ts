@@ -1,6 +1,7 @@
 import { getChatGPTUser } from "../../../../chatgpt-auth";
 import {
   createEntry,
+  deleteEntry,
   isOwner,
   updateEntry,
   type EntryFields,
@@ -65,6 +66,29 @@ export async function PATCH(
 
   const updated = await updateEntry(entryId, slug, fields);
   if (!updated) return Response.json({ error: "Entry not found." }, { status: 404 });
+  return Response.json({ ok: true });
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  const user = await getChatGPTUser();
+  if (!(await isOwner(user?.userId))) {
+    return Response.json({ error: "Only the desk owner can remove things." }, { status: 403 });
+  }
+
+  const { slug } = await params;
+  if (!getSession(slug)) {
+    return Response.json({ error: "Unknown session." }, { status: 404 });
+  }
+
+  const form = await request.formData();
+  const entryId = textValue(form, "entryId");
+  if (!entryId) return Response.json({ error: "Missing entry." }, { status: 400 });
+
+  const deleted = await deleteEntry(entryId, slug);
+  if (!deleted) return Response.json({ error: "Entry not found." }, { status: 404 });
   return Response.json({ ok: true });
 }
 

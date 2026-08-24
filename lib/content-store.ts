@@ -274,6 +274,44 @@ export async function updateEntry(
   return result.meta.changes > 0;
 }
 
+export async function deleteEntry(entryId: string, sessionSlug: string) {
+  await ensureContentSchema();
+  const db = database();
+  const imageResult = await db
+    .prepare(
+      `SELECT object_key AS objectKey
+      FROM entry_images
+      WHERE entry_id = ?
+        AND EXISTS (
+          SELECT 1 FROM entries
+          WHERE entries.id = entry_images.entry_id AND entries.session_slug = ?
+        )`,
+    )
+    .bind(entryId, sessionSlug)
+    .all<{ objectKey: string }>();
+
+  const [, entryResult] = await db.batch([
+    db.prepare(
+      `DELETE FROM entry_images
+      WHERE entry_id = ?
+        AND EXISTS (
+          SELECT 1 FROM entries
+          WHERE entries.id = entry_images.entry_id AND entries.session_slug = ?
+        )`,
+    ).bind(entryId, sessionSlug),
+    db.prepare(
+      "DELETE FROM entries WHERE id = ? AND session_slug = ?",
+    ).bind(entryId, sessionSlug),
+  ]);
+
+  if (entryResult.meta.changes < 1) return false;
+
+  await Promise.allSettled(
+    (imageResult.results ?? []).map(({ objectKey }) => mediaBucket().delete(objectKey)),
+  );
+  return true;
+}
+
 function safeExtension(file: File) {
   const fromName = file.name.split(".").pop()?.toLowerCase();
   if (fromName && /^[a-z0-9]{2,5}$/.test(fromName)) return fromName;

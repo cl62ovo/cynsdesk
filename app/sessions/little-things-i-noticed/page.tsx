@@ -45,7 +45,7 @@ export default async function NoticedSessionPage() {
         <section className="noticing-wall" aria-label="Things I noticed">
           {entries.map((entry, index) => (
             <article
-              className={`noticed-entry noticed-entry-${(index % 4) + 1}`}
+              className={`noticed-entry noticed-entry-${(index % 8) + 1}${entry.images.length ? "" : " text-only-entry"}`}
               key={entry.id}
             >
               {entry.images.length > 0 && (

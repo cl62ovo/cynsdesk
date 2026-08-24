@@ -39,6 +39,25 @@ export default function StudioClient({ entries, canClaim = false }: Props) {
     window.location.reload();
   }
 
+  async function remove(entry: ContentEntry) {
+    const label = entry.title || entry.shortText || "this untitled noticing";
+    if (!window.confirm(`Remove “${label}” and its photos for good?`)) return;
+
+    setBusy(true);
+    setMessage("");
+    const form = new FormData();
+    form.set("entryId", entry.id);
+    const response = await fetch("/api/sessions/little-things-i-noticed/entries", {
+      method: "DELETE",
+      body: form,
+    });
+    const result = (await response.json()) as { error?: string };
+    setBusy(false);
+    if (!response.ok) return setMessage(result.error ?? "That noticing would not come loose.");
+    setMessage("removed from the camera ✓");
+    window.location.reload();
+  }
+
   if (canClaim) {
     return (
       <section className="claim-card">
@@ -90,9 +109,19 @@ export default function StudioClient({ entries, canClaim = false }: Props) {
                   </p>
                 )}
                 <PublishField checked={entry.isPublished} />
-                <button className="studio-save" type="submit" disabled={busy}>
-                  keep these changes
-                </button>
+                <div className="edit-actions">
+                  <button className="studio-save" type="submit" disabled={busy}>
+                    keep these changes
+                  </button>
+                  <button
+                    className="studio-delete"
+                    type="button"
+                    disabled={busy}
+                    onClick={() => remove(entry)}
+                  >
+                    remove this noticing
+                  </button>
+                </div>
               </form>
             </details>
           ))}
