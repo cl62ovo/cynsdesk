@@ -39,7 +39,7 @@ export async function POST(request: Request) {
         stale: cached.contentFingerprint !== prepared.fingerprint,
       });
     }
-    if (body.readOnly) return Response.json({ cached: false }, { status: 404 });
+    if (body.readOnly) return Response.json({ cached: false });
   }
 
   const user = await getChatGPTUser();
