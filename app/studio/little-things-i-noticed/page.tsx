@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import {
   chatGPTSignInPath,
   getChatGPTUser,
@@ -23,7 +22,7 @@ export default async function NoticedStudioPage() {
     return (
       <main className="studio-shell">
         <header className="studio-heading">
-          <Link href="/sessions/little-things-i-noticed">← leave the little studio</Link>
+          <a href="/sessions/little-things-i-noticed">← leave the little studio</a>
           <h1>behind the camera</h1>
         </header>
         <section className="claim-card">
@@ -40,7 +39,7 @@ export default async function NoticedStudioPage() {
     return (
       <main className="studio-shell">
         <header className="studio-heading">
-          <Link href="/sessions/little-things-i-noticed">← leave the little studio</Link>
+          <a href="/sessions/little-things-i-noticed">← leave the little studio</a>
           <h1>behind the camera</h1>
         </header>
         <StudioClient entries={[]} canClaim />
@@ -52,7 +51,7 @@ export default async function NoticedStudioPage() {
     return (
       <main className="studio-shell">
         <header className="studio-heading">
-          <Link href="/sessions/little-things-i-noticed">← back to the photographs</Link>
+          <a href="/sessions/little-things-i-noticed">← back to the photographs</a>
           <h1>behind the camera</h1>
         </header>
         <section className="claim-card">
@@ -68,7 +67,7 @@ export default async function NoticedStudioPage() {
   return (
     <main className="studio-shell">
       <header className="studio-heading">
-        <Link href="/sessions/little-things-i-noticed">← see the camera wall</Link>
+        <a href="/sessions/little-things-i-noticed">← see the camera wall</a>
         <p>private · only visible to you</p>
         <h1>behind the camera</h1>
       </header>

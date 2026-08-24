@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import type { ContentEntry } from "../../../lib/content-store";
 
@@ -10,7 +9,6 @@ type Props = {
 };
 
 export default function StudioClient({ entries, canClaim = false }: Props) {
-  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -21,7 +19,7 @@ export default function StudioClient({ entries, canClaim = false }: Props) {
     const result = (await response.json()) as { error?: string };
     setBusy(false);
     if (!response.ok) return setMessage(result.error ?? "The claim did not work.");
-    router.refresh();
+    window.location.reload();
   }
 
   async function save(event: FormEvent<HTMLFormElement>, method: "POST" | "PATCH") {
@@ -38,7 +36,7 @@ export default function StudioClient({ entries, canClaim = false }: Props) {
     if (!response.ok) return setMessage(result.error ?? "That note would not stay put.");
     if (method === "POST") form.reset();
     setMessage(method === "POST" ? "tucked safely behind the camera ✓" : "changes kept ✓");
-    router.refresh();
+    window.location.reload();
   }
 
   if (canClaim) {

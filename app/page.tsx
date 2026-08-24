@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
 export default function Home() {
@@ -28,13 +27,13 @@ export default function Home() {
           me ♡
         </span>
 
-        <Link
+        <a
           className="desk-hotspot camera-hotspot"
           href="/sessions/little-things-i-noticed"
           aria-label="Open little things I noticed"
         >
           <span className="sr-only">little things I noticed</span>
-        </Link>
+        </a>
 
         <button
           className="lamp-switch"

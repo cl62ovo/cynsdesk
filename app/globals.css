@@ -56,7 +56,6 @@ body {
   height: auto;
   user-select: none;
   -webkit-user-drag: none;
-  transition: filter .75s ease;
 }
 
 .night-wash,
@@ -71,7 +70,7 @@ body {
 
 .night-wash {
   background:
-    linear-gradient(180deg, rgba(24, 31, 48, .54), rgba(31, 26, 33, .46)),
+    linear-gradient(180deg, rgba(24, 31, 48, .7), rgba(31, 26, 33, .66)),
     radial-gradient(circle at 18% 25%, rgba(48, 62, 82, .22), transparent 40%);
   mix-blend-mode: multiply;
 }
@@ -99,10 +98,6 @@ body {
   box-shadow:
     0 22px 62px rgba(2, 6, 15, .5),
     0 0 48px rgba(228, 163, 76, .12);
-}
-
-.night-mode .reference-art {
-  filter: brightness(.72) saturate(.85) sepia(.08) contrast(1.03);
 }
 
 .night-mode .night-wash,
@@ -212,14 +207,13 @@ body {
   -webkit-mask-image: radial-gradient(ellipse at center, #000 71%, transparent 100%);
   mask-image: radial-gradient(ellipse at center, #000 71%, transparent 100%);
   transform: rotate(.6deg);
-  transition: filter .75s ease;
 }
 
 .plant-water-label {
   position: absolute;
   left: 68.9%;
   top: 39.5%;
-  z-index: 4;
+  z-index: 1;
   width: 5.6%;
   min-width: 48px;
   padding: 1.25% .4% .75%;
@@ -232,7 +226,7 @@ body {
   line-height: 1.4;
   text-align: center;
   transform: rotate(2.2deg);
-  transition: filter .75s ease, transform .2s ease;
+  transition: transform .2s ease;
 }
 
 .plant-water-label::before {
@@ -281,15 +275,6 @@ body {
 
 .night-mode .switch-mark {
   background: #fff2c4;
-}
-
-.night-mode .plant-water-label,
-.night-mode .plant-water-label {
-  filter: brightness(.7) saturate(.8) sepia(.08);
-}
-
-.night-mode .old-water-label-cover {
-  filter: brightness(.72) saturate(.85) sepia(.08) contrast(1.03);
 }
 
 @keyframes camera-focus {

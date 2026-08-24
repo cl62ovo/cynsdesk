@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getChatGPTUser } from "../../chatgpt-auth";
 import { getEntries, isOwner } from "../../../lib/content-store";
 
@@ -27,9 +26,9 @@ export default async function NoticedSessionPage() {
     <main className="noticed-session">
       <span className="session-grain" aria-hidden="true" />
       <header className="noticed-heading">
-        <Link className="desk-return" href="/">
+        <a className="desk-return" href="/">
           ← back to the desk
-        </Link>
+        </a>
         <div className="camera-doodle" aria-hidden="true">
           <span className="camera-lens" />
           <span className="camera-button" />
@@ -87,10 +86,10 @@ export default async function NoticedSessionPage() {
       )}
 
       {owner && (
-        <Link className="owner-add-polaroid" href="/studio/little-things-i-noticed">
+        <a className="owner-add-polaroid" href="/studio/little-things-i-noticed">
           <span aria-hidden="true">＋</span>
           add another noticing
-        </Link>
+        </a>
       )}
     </main>
   );

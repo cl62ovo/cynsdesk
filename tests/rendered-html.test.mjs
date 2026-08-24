@@ -35,13 +35,18 @@ test("server-renders the interactive desk cover", async () => {
 });
 
 test("keeps the first session on the reusable content system", async () => {
-  const [sessionPage, studio, schema, registry] = await Promise.all([
+  const [homePage, sessionPage, studio, studioClient, schema, registry] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../app/sessions/little-things-i-noticed/page.tsx", import.meta.url),
       "utf8",
     ),
     readFile(
       new URL("../app/studio/little-things-i-noticed/page.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL("../app/studio/little-things-i-noticed/StudioClient.tsx", import.meta.url),
       "utf8",
     ),
     readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
@@ -55,6 +60,10 @@ test("keeps the first session on the reusable content system", async () => {
   assert.match(schema, /longText/);
   assert.match(registry, /show me sth/);
   assert.match(registry, /the box, over time/);
+  assert.doesNotMatch(homePage, /next\/link/);
+  assert.doesNotMatch(sessionPage, /next\/link/);
+  assert.doesNotMatch(studio, /next\/link/);
+  assert.doesNotMatch(studioClient, /router\.refresh/);
 });
 
 test("keeps the starter preview out of the finished site", async () => {
