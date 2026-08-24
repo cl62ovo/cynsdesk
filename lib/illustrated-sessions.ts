@@ -4,7 +4,8 @@ export type IllustratedSessionConfig = {
     | "favorite-drink"
     | "things-i-dont-want-to-forget"
     | "things-i-listened-to"
-    | "pages-i-kept";
+    | "pages-i-kept"
+    | "things-stuck-in-my-head";
   name: string;
   theme: string;
   kicker: string;
@@ -17,10 +18,26 @@ export type IllustratedSessionConfig = {
   collectionLabel: string;
   itemNoun: string;
   storageLabel: string;
-  editorKind?: "listening" | "reading";
+  editorKind?: "listening" | "reading" | "thoughts";
 };
 
 export const illustratedSessions: IllustratedSessionConfig[] = [
+  {
+    slug: "things-stuck-in-my-head",
+    name: "things stuck in my head",
+    theme: "thoughts-session",
+    kicker: "from the crumpled paper",
+    intro: "thoughts I almost threw away, then unfolded and kept",
+    emptyText: "the wall is waiting for its first thought.",
+    emptyHint: "something will get stuck here soon.",
+    addLabel: "what's stuck in your head?",
+    studioTitle: "behind the thought wall",
+    freshLabel: "a thought I decided to keep",
+    collectionLabel: "thoughts already pinned to the wall",
+    itemNoun: "thought",
+    storageLabel: "the thought wall",
+    editorKind: "thoughts",
+  },
   {
     slug: "things-i-made",
     name: "things I made",

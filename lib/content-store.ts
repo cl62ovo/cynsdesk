@@ -152,7 +152,7 @@ export async function getEntries(
         is_published AS isPublished, sort_order AS sortOrder,
         created_at AS createdAt, updated_at AS updatedAt
       FROM entries ${where}
-      ORDER BY COALESCE(entry_date, '') DESC, sort_order ASC, created_at DESC`,
+      ORDER BY sort_order ASC, COALESCE(entry_date, '') DESC, created_at DESC`,
     )
     .bind(sessionSlug)
     .all<EntryRow>();
@@ -342,6 +342,21 @@ export async function deleteEntry(entryId: string, sessionSlug: string) {
     (imageResult.results ?? []).map(({ objectKey }) => mediaBucket().delete(objectKey)),
   );
   return true;
+}
+
+export async function reorderEntries(sessionSlug: string, entryIds: string[]) {
+  await ensureContentSchema();
+  if (!entryIds.length) return;
+
+  await database().batch(
+    entryIds.map((entryId, index) =>
+      database()
+        .prepare(
+          "UPDATE entries SET sort_order = ?, updated_at = ? WHERE id = ? AND session_slug = ?",
+        )
+        .bind(index + 1, Date.now(), entryId, sessionSlug),
+    ),
+  );
 }
 
 function safeExtension(file: File) {

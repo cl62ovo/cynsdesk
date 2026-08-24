@@ -3,6 +3,7 @@ import {
   createEntry,
   deleteEntry,
   isOwner,
+  reorderEntries,
   updateEntry,
   type EntryFields,
 } from "../../../../../lib/content-store";
@@ -89,6 +90,35 @@ export async function DELETE(
 
   const deleted = await deleteEntry(entryId, slug);
   if (!deleted) return Response.json({ error: "Entry not found." }, { status: 404 });
+  return Response.json({ ok: true });
+}
+
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  const user = await getChatGPTUser();
+  if (!(await isOwner(user?.userId))) {
+    return Response.json({ error: "Only the desk owner can rearrange things." }, { status: 403 });
+  }
+
+  const { slug } = await params;
+  if (!getSession(slug)) {
+    return Response.json({ error: "Unknown session." }, { status: 404 });
+  }
+
+  const body = (await request.json().catch(() => null)) as { entryIds?: unknown } | null;
+  const entryIds = body?.entryIds;
+  if (
+    !Array.isArray(entryIds) ||
+    entryIds.length > 500 ||
+    entryIds.some((id) => typeof id !== "string" || id.length > 100) ||
+    new Set(entryIds).size !== entryIds.length
+  ) {
+    return Response.json({ error: "That arrangement could not be read." }, { status: 400 });
+  }
+
+  await reorderEntries(slug, entryIds as string[]);
   return Response.json({ ok: true });
 }
 

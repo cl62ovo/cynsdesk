@@ -13,6 +13,7 @@ type Props = {
   storageLabel?: string;
   listeningFields?: boolean;
   readingFields?: boolean;
+  thoughtFields?: boolean;
 };
 
 export default function StudioClient({
@@ -25,6 +26,7 @@ export default function StudioClient({
   storageLabel = "the camera",
   listeningFields = false,
   readingFields = false,
+  thoughtFields = false,
 }: Props) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -97,10 +99,14 @@ export default function StudioClient({
       <form className="studio-paper new-entry-form" onSubmit={(event) => save(event, "POST")}>
         <span className="entry-tape" aria-hidden="true" />
         <p className="studio-number">{freshLabel}</p>
-        <EntryFields listening={listeningFields} reading={readingFields} />
+        <EntryFields listening={listeningFields} reading={readingFields} thoughts={thoughtFields} />
         <label className="photo-pocket">
           <span>
-            {listeningFields || readingFields ? "drop a cover / image here" : "drop up to 6 photos here"}
+            {thoughtFields
+              ? "tape up an image or a few little pictures"
+              : listeningFields || readingFields
+                ? "drop a cover / image here"
+                : "drop up to 6 photos here"}
           </span>
           <small>JPG, PNG, GIF or WebP · 8 MB each</small>
           <input type="file" name="photos" accept="image/*" multiple />
@@ -121,7 +127,12 @@ export default function StudioClient({
               <summary>{entry.title || entry.shortText || `an untitled ${itemNoun}`}</summary>
               <form onSubmit={(event) => save(event, "PATCH")}>
                 <input type="hidden" name="entryId" value={entry.id} />
-                <EntryFields entry={entry} listening={listeningFields} reading={readingFields} />
+                <EntryFields
+                  entry={entry}
+                  listening={listeningFields}
+                  reading={readingFields}
+                  thoughts={thoughtFields}
+                />
                 {entry.images.length > 0 && (
                   <p className="kept-photos-note">
                     {entry.images.length} photo{entry.images.length === 1 ? " is" : "s are"} already tucked here.
@@ -154,10 +165,12 @@ function EntryFields({
   entry,
   listening = false,
   reading = false,
+  thoughts = false,
 }: {
   entry?: ContentEntry;
   listening?: boolean;
   reading?: boolean;
+  thoughts?: boolean;
 }) {
   if (listening) {
     return (
@@ -245,6 +258,33 @@ function EntryFields({
             placeholder="https://…"
             maxLength={1000}
           />
+        </label>
+      </div>
+    );
+  }
+
+  if (thoughts) {
+    return (
+      <div className="studio-fields thought-fields">
+        <label>
+          <span>date <i>optional</i></span>
+          <input type="date" name="entryDate" defaultValue={entry?.entryDate ?? ""} />
+        </label>
+        <label>
+          <span>little heading <i>optional</i></span>
+          <input name="title" defaultValue={entry?.title ?? ""} maxLength={120} />
+        </label>
+        <label className="field-wide">
+          <span>what&apos;s stuck in your head?</span>
+          <textarea name="shortText" defaultValue={entry?.shortText ?? ""} rows={5} maxLength={1200} />
+        </label>
+        <label className="field-wide">
+          <span>the longer version <i>optional</i></span>
+          <textarea name="longText" defaultValue={entry?.longText ?? ""} rows={7} maxLength={5000} />
+        </label>
+        <label className="field-wide">
+          <span>tiny caption / afterthought <i>optional</i></span>
+          <input name="note" defaultValue={entry?.note ?? ""} maxLength={280} />
         </label>
       </div>
     );

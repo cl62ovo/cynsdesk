@@ -205,3 +205,28 @@ test("opens the book stack into a mixed archive of kept pages", async () => {
   assert.match(styles, /\.pages-hotspot\s*{[^}]*clip-path:/s);
   assert.match(styles, /\.made-hotspot\s*{[^}]*width:\s*4\.7%/s);
 });
+
+test("opens the crumpled note into an editable thought wall", async () => {
+  const [homePage, page, wall, studio, configs, api, store, styles] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/sessions/things-stuck-in-my-head/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/sessions/things-stuck-in-my-head/ThoughtsWall.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/studio/little-things-i-noticed/StudioClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/illustrated-sessions.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/sessions/[slug]/entries/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/content-store.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(homePage, /href="\/sessions\/things-stuck-in-my-head"/);
+  assert.match(page, /getEntries\("things-stuck-in-my-head"\)/);
+  assert.match(wall, /put it back/);
+  assert.match(wall, /what&apos;s stuck in/);
+  assert.match(wall, /rearrange the wall/);
+  assert.match(studio, /thought-fields/);
+  assert.match(configs, /editorKind: "thoughts"/);
+  assert.match(api, /export async function PUT/);
+  assert.match(store, /export async function reorderEntries/);
+  assert.match(styles, /\.thought-scrap\.paper-1/);
+  assert.match(styles, /\.thought-detail-backdrop/);
+});

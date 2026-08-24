@@ -81,6 +81,15 @@ export default function Home() {
           <span className="sr-only">things I listened to</span>
         </a>
 
+        <a
+          className="desk-hotspot thoughts-hotspot"
+          href="/sessions/things-stuck-in-my-head"
+          target="_top"
+          aria-label="Open things stuck in my head"
+        >
+          <span className="sr-only">things stuck in my head</span>
+        </a>
+
         <button
           className="lamp-switch"
           type="button"
