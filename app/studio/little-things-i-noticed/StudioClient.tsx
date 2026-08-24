@@ -6,9 +6,22 @@ import type { ContentEntry } from "../../../lib/content-store";
 type Props = {
   entries: ContentEntry[];
   canClaim?: boolean;
+  sessionSlug?: string;
+  freshLabel?: string;
+  collectionLabel?: string;
+  itemNoun?: string;
+  storageLabel?: string;
 };
 
-export default function StudioClient({ entries, canClaim = false }: Props) {
+export default function StudioClient({
+  entries,
+  canClaim = false,
+  sessionSlug = "little-things-i-noticed",
+  freshLabel = "a fresh little noticing",
+  collectionLabel = "things already in the camera",
+  itemNoun = "noticing",
+  storageLabel = "the camera",
+}: Props) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -27,7 +40,7 @@ export default function StudioClient({ entries, canClaim = false }: Props) {
     setBusy(true);
     setMessage("");
     const form = event.currentTarget;
-    const response = await fetch("/api/sessions/little-things-i-noticed/entries", {
+    const response = await fetch(`/api/sessions/${sessionSlug}/entries`, {
       method,
       body: new FormData(form),
     });
@@ -35,26 +48,26 @@ export default function StudioClient({ entries, canClaim = false }: Props) {
     setBusy(false);
     if (!response.ok) return setMessage(result.error ?? "That note would not stay put.");
     if (method === "POST") form.reset();
-    setMessage(method === "POST" ? "tucked safely behind the camera ✓" : "changes kept ✓");
+    setMessage(method === "POST" ? `tucked safely inside ${storageLabel} ✓` : "changes kept ✓");
     window.location.reload();
   }
 
   async function remove(entry: ContentEntry) {
-    const label = entry.title || entry.shortText || "this untitled noticing";
+    const label = entry.title || entry.shortText || `this untitled ${itemNoun}`;
     if (!window.confirm(`Remove “${label}” and its photos for good?`)) return;
 
     setBusy(true);
     setMessage("");
     const form = new FormData();
     form.set("entryId", entry.id);
-    const response = await fetch("/api/sessions/little-things-i-noticed/entries", {
+    const response = await fetch(`/api/sessions/${sessionSlug}/entries`, {
       method: "DELETE",
       body: form,
     });
     const result = (await response.json()) as { error?: string };
     setBusy(false);
-    if (!response.ok) return setMessage(result.error ?? "That noticing would not come loose.");
-    setMessage("removed from the camera ✓");
+    if (!response.ok) return setMessage(result.error ?? `That ${itemNoun} would not come loose.`);
+    setMessage(`removed from ${storageLabel} ✓`);
     window.location.reload();
   }
 
@@ -79,7 +92,7 @@ export default function StudioClient({ entries, canClaim = false }: Props) {
     <>
       <form className="studio-paper new-entry-form" onSubmit={(event) => save(event, "POST")}>
         <span className="entry-tape" aria-hidden="true" />
-        <p className="studio-number">a fresh little noticing</p>
+        <p className="studio-number">{freshLabel}</p>
         <EntryFields />
         <label className="photo-pocket">
           <span>drop up to 6 photos here</span>
@@ -96,10 +109,10 @@ export default function StudioClient({ entries, canClaim = false }: Props) {
 
       {entries.length > 0 && (
         <section className="studio-existing" aria-label="Edit existing entries">
-          <h2>things already in the camera</h2>
+          <h2>{collectionLabel}</h2>
           {entries.map((entry) => (
             <details className="edit-scrap" key={entry.id}>
-              <summary>{entry.title || entry.shortText || "an untitled noticing"}</summary>
+              <summary>{entry.title || entry.shortText || `an untitled ${itemNoun}`}</summary>
               <form onSubmit={(event) => save(event, "PATCH")}>
                 <input type="hidden" name="entryId" value={entry.id} />
                 <EntryFields entry={entry} />
@@ -119,7 +132,7 @@ export default function StudioClient({ entries, canClaim = false }: Props) {
                     disabled={busy}
                     onClick={() => remove(entry)}
                   >
-                    remove this noticing
+                    remove this {itemNoun}
                   </button>
                 </div>
               </form>

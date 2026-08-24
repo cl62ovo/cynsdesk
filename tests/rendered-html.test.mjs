@@ -27,6 +27,9 @@ test("server-renders the interactive desk cover", async () => {
   assert.doesNotMatch(html, /lamp-base-correction/);
   assert.match(html, /class="lamp-switch"/i);
   assert.match(html, /href="\/sessions\/little-things-i-noticed"/i);
+  assert.match(html, /href="\/sessions\/things-i-made"/i);
+  assert.match(html, /href="\/sessions\/favorite-drink"/i);
+  assert.match(html, /href="\/sessions\/things-i-dont-want-to-forget"/i);
   assert.match(html, /target="_top"/i);
   assert.match(html, /aria-label="Open little things I noticed"/i);
   assert.match(html, /class="plant-water-label"/i);
@@ -88,4 +91,34 @@ test("keeps the starter preview out of the finished site", async () => {
   assert.doesNotMatch(page, /_sites-preview|SkeletonPreview|codex-preview/);
   assert.doesNotMatch(layout, /Starter Project|next\/font/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
+});
+
+test("opens the three new desk objects into reusable galleries and studios", async () => {
+  const [homePage, galleryPage, studioPage, studioClient, configs, styles] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/sessions/[slug]/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/studio/[slug]/page.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL("../app/studio/little-things-i-noticed/StudioClient.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(new URL("../lib/illustrated-sessions.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  for (const slug of [
+    "things-i-made",
+    "favorite-drink",
+    "things-i-dont-want-to-forget",
+  ]) {
+    assert.match(homePage, new RegExp(`/sessions/${slug}`));
+    assert.match(configs, new RegExp(`slug: "${slug}"`));
+  }
+
+  assert.match(galleryPage, /getEntries\(config\.slug\)/);
+  assert.match(galleryPage, /href={`\/studio\/\$\{config\.slug\}`}/);
+  assert.match(studioPage, /getEntries\(config\.slug, true\)/);
+  assert.match(studioClient, /`\/api\/sessions\/\$\{sessionSlug\}\/entries`/);
+  assert.match(studioClient, /method: "DELETE"/);
+  assert.match(styles, /\.made-hotspot\s*{[^}]*width:\s*4\.7%/s);
 });

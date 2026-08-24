@@ -36,6 +36,33 @@ export default function Home() {
           <span className="sr-only">little things I noticed</span>
         </a>
 
+        <a
+          className="desk-hotspot made-hotspot"
+          href="/sessions/things-i-made"
+          target="_top"
+          aria-label="Open things I made"
+        >
+          <span className="sr-only">things I made</span>
+        </a>
+
+        <a
+          className="desk-hotspot drink-hotspot"
+          href="/sessions/favorite-drink"
+          target="_top"
+          aria-label="Open favorite drink"
+        >
+          <span className="sr-only">favorite drink</span>
+        </a>
+
+        <a
+          className="desk-hotspot forget-hotspot"
+          href="/sessions/things-i-dont-want-to-forget"
+          target="_top"
+          aria-label="Open things I don't want to forget"
+        >
+          <span className="sr-only">things I don&apos;t want to forget</span>
+        </a>
+
         <button
           className="lamp-switch"
           type="button"
