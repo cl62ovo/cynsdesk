@@ -1,24 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ContentEntry } from "../../../lib/content-store";
 
 type Props = { entries: ContentEntry[]; owner: boolean; showStudioDoor: boolean };
 type WorkbenchExtra = Record<string, string>;
-type BenchEntry = ContentEntry & { starter?: boolean };
-
-const starterAttempts: BenchEntry[] = [
-  sample("web-corner", "trying", "coding", "I tried making my own little corner of the internet", "somehow it has frogs now.", "still adding little doors"),
-  sample("pattern-optimizer", "trying", "sewing", "I tried making a sewing pattern optimizer", "I wanted to see whether scraps could fit together more cleverly.", "still figuring it out"),
-  sample("felt-frog", "tried", "craft", "tried making a tiny frog out of felt", "he’s ugly. I love him.", "somehow worked"),
-  sample("cyanotype", "idea", "random", "try cyanotype printing?", "the blue looks like keeping a shadow.", "waiting for sunlight"),
-  sample("photo-thread", "idea", "embroidery", "embroider on a photograph??", null, "???"),
-  sample("sound-thing", "idea", "coding", "make something that reacts to sound", null, "tiny spark"),
-];
 
 export default function TinkeringWorkbench({ entries, owner, showStudioDoor }: Props) {
-  const [selected, setSelected] = useState<BenchEntry | null>(null);
-  const pieces = useMemo(() => (entries.length ? entries : starterAttempts), [entries]);
+  const [selected, setSelected] = useState<ContentEntry | null>(null);
+  const pieces = entries;
 
   useEffect(() => {
     if (!selected) return;
@@ -99,6 +89,14 @@ export default function TinkeringWorkbench({ entries, owner, showStudioDoor }: P
           );
         })}
 
+        {!entries.length && (
+          <div className="empty-workbench-sheet">
+            <span aria-hidden="true">✦</span>
+            <strong>nothing is saved here yet</strong>
+            <small>your first real attempt will land on this bench</small>
+          </div>
+        )}
+
         {showStudioDoor && (
           <a className="try-something-sheet" href="/studio/things-i-tried" target="_top">
             <span aria-hidden="true">✎</span>
@@ -113,8 +111,6 @@ export default function TinkeringWorkbench({ entries, owner, showStudioDoor }: P
         </aside>
       </section>
 
-      {!entries.length && <p className="bench-starter-note">a few sample traces, until your own experiments take over the bench</p>}
-
       {selected && (
         <WorkbenchDetail entry={selected} owner={owner} onClose={() => setSelected(null)} />
       )}
@@ -122,7 +118,7 @@ export default function TinkeringWorkbench({ entries, owner, showStudioDoor }: P
   );
 }
 
-function WorkbenchDetail({ entry, owner, onClose }: { entry: BenchEntry; owner: boolean; onClose: () => void }) {
+function WorkbenchDetail({ entry, owner, onClose }: { entry: ContentEntry; owner: boolean; onClose: () => void }) {
   const extras = parseExtras(entry.extraData);
   const stage = stageOf(entry.contentType);
   const links = referenceLinks(extras.referenceLinks, entry.externalUrl);
@@ -210,7 +206,7 @@ function WorkbenchDetail({ entry, owner, onClose }: { entry: BenchEntry; owner: 
           </section>
         )}
 
-        {owner && !entry.starter && (
+        {owner && (
           <a className="edit-this-attempt" href={`/studio/things-i-tried#entry-${entry.id}`} target="_top">
             edit this attempt ✎
           </a>
@@ -220,30 +216,6 @@ function WorkbenchDetail({ entry, owner, onClose }: { entry: BenchEntry; owner: 
       </section>
     </div>
   );
-}
-
-function sample(id: string, stage: string, kind: string, title: string, shortText: string | null, status: string): BenchEntry {
-  const now = Date.now();
-  return {
-    id: `starter-${id}`,
-    sessionSlug: "things-i-tried",
-    title,
-    entryDate: null,
-    shortText,
-    longText: null,
-    note: null,
-    contentType: stage,
-    creator: status,
-    externalUrl: null,
-    extraData: JSON.stringify({ workbenchKind: kind }),
-    isPublished: true,
-    sortOrder: 0,
-    createdAt: now,
-    updatedAt: now,
-    images: [],
-    files: [],
-    starter: true,
-  };
 }
 
 function parseExtras(value: string | null): WorkbenchExtra {

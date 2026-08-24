@@ -129,9 +129,19 @@ export default function StudioClient({
 
       {message && <p className="studio-message" role="status">{message}</p>}
 
-      {entries.length > 0 && (
-        <section className="studio-existing" aria-label="Edit existing entries">
-          <h2>{collectionLabel}</h2>
+      <section className="studio-existing" aria-label="Edit existing entries">
+        <h2>{collectionLabel}</h2>
+        {entries.length === 0 ? (
+          <div className="studio-empty-existing" role="status">
+            <strong>nothing saved yet — there is nothing to delete</strong>
+            <p>
+              {workbenchFields
+                ? "The objects previously shown on the workbench were sample placeholders. They have now been removed."
+                : `Add your first ${itemNoun} above; saved items will appear here with edit and delete controls.`}
+            </p>
+          </div>
+        ) : (
+          <>
           {entries.map((entry) => (
             <details className="edit-scrap" id={`entry-${entry.id}`} key={entry.id}>
               <summary>{entry.title || entry.shortText || `an untitled ${itemNoun}`}</summary>
@@ -175,14 +185,15 @@ export default function StudioClient({
                     disabled={busy}
                     onClick={() => remove(entry)}
                   >
-                    remove this {itemNoun}
+                    {workbenchFields ? "delete this attempt · 删除" : `remove this ${itemNoun}`}
                   </button>
                 </div>
               </form>
             </details>
           ))}
-        </section>
-      )}
+          </>
+        )}
+      </section>
     </>
   );
 }

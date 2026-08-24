@@ -250,6 +250,8 @@ test("turns the laptop into an evolving tinkering workbench", async () => {
   assert.match(bench, /Cynthia was just here/);
   assert.match(bench, /attempts \/ versions/);
   assert.match(bench, /leave it on the bench/);
+  assert.match(bench, /nothing is saved here yet/);
+  assert.doesNotMatch(bench, /starterAttempts|starter-/);
   assert.match(studio, /workbench-fields/);
   assert.match(studio, /name="attempts"/);
   assert.match(studio, /add more traces of trying/);
@@ -282,6 +284,8 @@ test("gives the private workbench editor photo, link, and PDF attachments", asyn
   assert.match(studio, /name="documents"/);
   assert.match(studio, /application\/pdf/);
   assert.match(studio, /id={`entry-\$\{entry\.id\}`}/);
+  assert.match(studio, /there is nothing to delete/);
+  assert.match(studio, /delete this attempt · 删除/);
   assert.match(api, /MAX_DOCUMENT_BYTES/);
   assert.match(api, /Only PDF documents/);
   assert.match(store, /export type ContentFile/);

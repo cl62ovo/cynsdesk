@@ -2133,6 +2133,29 @@ body {
   text-align: center;
 }
 
+.studio-empty-existing {
+  margin: 18px auto 0;
+  padding: 25px 24px 22px;
+  border: 1px dashed rgba(91,70,52,.34);
+  background: rgba(255,252,241,.46);
+  color: #69594c;
+  text-align: center;
+  transform: rotate(-.35deg);
+}
+
+.studio-empty-existing strong {
+  font-family: "Comic Sans MS", "Bradley Hand", cursive;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.studio-empty-existing p {
+  max-width: 530px;
+  margin: 9px auto 0;
+  color: #887567;
+  font: italic 12px/1.55 Georgia, serif;
+}
+
 .edit-scrap {
   margin: 18px 0;
   padding: 20px 23px;
