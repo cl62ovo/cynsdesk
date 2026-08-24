@@ -1,5 +1,9 @@
 export type IllustratedSessionConfig = {
-  slug: "things-i-made" | "favorite-drink" | "things-i-dont-want-to-forget";
+  slug:
+    | "things-i-made"
+    | "favorite-drink"
+    | "things-i-dont-want-to-forget"
+    | "things-i-listened-to";
   name: string;
   theme: string;
   kicker: string;
@@ -12,6 +16,7 @@ export type IllustratedSessionConfig = {
   collectionLabel: string;
   itemNoun: string;
   storageLabel: string;
+  editorKind?: "listening";
 };
 
 export const illustratedSessions: IllustratedSessionConfig[] = [
@@ -19,16 +24,16 @@ export const illustratedSessions: IllustratedSessionConfig[] = [
     slug: "things-i-made",
     name: "things I made",
     theme: "made-session",
-    kicker: "from the book pile",
+    kicker: "from the thread spool",
     intro: "small things that began in my hands",
     emptyText: "the first handmade thing is still finding its page.",
     emptyHint: "the thread is waiting.",
     addLabel: "add something I made",
-    studioTitle: "inside the making book",
+    studioTitle: "beside the thread spool",
     freshLabel: "a new thing from my hands",
     collectionLabel: "things already stitched into the book",
     itemNoun: "made thing",
-    storageLabel: "the making book",
+    storageLabel: "the making table",
   },
   {
     slug: "favorite-drink",
@@ -59,6 +64,22 @@ export const illustratedSessions: IllustratedSessionConfig[] = [
     collectionLabel: "memories already tucked in the drawer",
     itemNoun: "memory",
     storageLabel: "the memory drawer",
+  },
+  {
+    slug: "things-i-listened-to",
+    name: "things I listened to",
+    theme: "listening-session",
+    kicker: "from the headphones",
+    intro: "sounds I kept close, and the little moments attached to them",
+    emptyText: "the listening wall is quiet for now.",
+    emptyHint: "the first sleeve is waiting.",
+    addLabel: "something new? ♫",
+    studioTitle: "behind the listening wall",
+    freshLabel: "something new for the wall",
+    collectionLabel: "things already hanging on the wall",
+    itemNoun: "listening thing",
+    storageLabel: "the listening wall",
+    editorKind: "listening",
   },
 ];
 

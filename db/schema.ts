@@ -17,6 +17,9 @@ export const entries = sqliteTable(
     shortText: text("short_text"),
     longText: text("long_text"),
     note: text("note"),
+    contentType: text("content_type"),
+    creator: text("creator"),
+    externalUrl: text("external_url"),
     isPublished: integer("is_published", { mode: "boolean" })
       .notNull()
       .default(true),

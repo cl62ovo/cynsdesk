@@ -76,6 +76,7 @@ export default async function IllustratedStudioPage({
         collectionLabel={config.collectionLabel}
         itemNoun={config.itemNoun}
         storageLabel={config.storageLabel}
+        listeningFields={config.editorKind === "listening"}
       />
     </StudioFrame>
   );

@@ -19,6 +19,9 @@ export type ContentEntry = {
   shortText: string | null;
   longText: string | null;
   note: string | null;
+  contentType: string | null;
+  creator: string | null;
+  externalUrl: string | null;
   isPublished: boolean;
   sortOrder: number;
   createdAt: number;
@@ -64,6 +67,9 @@ export async function ensureContentSchema() {
           short_text TEXT,
           long_text TEXT,
           note TEXT,
+          content_type TEXT,
+          creator TEXT,
+          external_url TEXT,
           is_published INTEGER NOT NULL DEFAULT 1,
           sort_order INTEGER NOT NULL DEFAULT 0,
           created_at INTEGER NOT NULL,
@@ -85,6 +91,20 @@ export async function ensureContentSchema() {
         db.prepare(`CREATE INDEX IF NOT EXISTS idx_entry_images_entry_order
           ON entry_images(entry_id, sort_order)`),
       ]);
+
+      const columnResult = await db
+        .prepare("PRAGMA table_info(entries)")
+        .all<{ name: string }>();
+      const columns = new Set((columnResult.results ?? []).map(({ name }) => name));
+      const additions = [
+        ["content_type", "ALTER TABLE entries ADD COLUMN content_type TEXT"],
+        ["creator", "ALTER TABLE entries ADD COLUMN creator TEXT"],
+        ["external_url", "ALTER TABLE entries ADD COLUMN external_url TEXT"],
+      ] as const;
+      const missing = additions
+        .filter(([name]) => !columns.has(name))
+        .map(([, sql]) => db.prepare(sql));
+      if (missing.length) await db.batch(missing);
     })().catch((error) => {
       schemaReady = null;
       throw error;
@@ -128,6 +148,7 @@ export async function getEntries(
     .prepare(
       `SELECT id, session_slug AS sessionSlug, title, entry_date AS entryDate,
         short_text AS shortText, long_text AS longText, note,
+        content_type AS contentType, creator, external_url AS externalUrl,
         is_published AS isPublished, sort_order AS sortOrder,
         created_at AS createdAt, updated_at AS updatedAt
       FROM entries ${where}
@@ -171,6 +192,9 @@ export type EntryFields = {
   shortText: string | null;
   longText: string | null;
   note: string | null;
+  contentType: string | null;
+  creator: string | null;
+  externalUrl: string | null;
   isPublished: boolean;
 };
 
@@ -203,8 +227,9 @@ export async function createEntry(
         .prepare(
           `INSERT INTO entries (
             id, session_slug, title, entry_date, short_text, long_text, note,
-            is_published, sort_order, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+            content_type, creator, external_url, is_published, sort_order,
+            created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
         )
         .bind(
           entryId,
@@ -214,6 +239,9 @@ export async function createEntry(
           fields.shortText,
           fields.longText,
           fields.note,
+          fields.contentType,
+          fields.creator,
+          fields.externalUrl,
           fields.isPublished ? 1 : 0,
           now,
           now,
@@ -256,7 +284,8 @@ export async function updateEntry(
   const result = await database()
     .prepare(
       `UPDATE entries SET title = ?, entry_date = ?, short_text = ?,
-        long_text = ?, note = ?, is_published = ?, updated_at = ?
+        long_text = ?, note = ?, content_type = ?, creator = ?, external_url = ?,
+        is_published = ?, updated_at = ?
       WHERE id = ? AND session_slug = ?`,
     )
     .bind(
@@ -265,6 +294,9 @@ export async function updateEntry(
       fields.shortText,
       fields.longText,
       fields.note,
+      fields.contentType,
+      fields.creator,
+      fields.externalUrl,
       fields.isPublished ? 1 : 0,
       Date.now(),
       entryId,

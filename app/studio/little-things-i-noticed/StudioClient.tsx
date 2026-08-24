@@ -11,6 +11,7 @@ type Props = {
   collectionLabel?: string;
   itemNoun?: string;
   storageLabel?: string;
+  listeningFields?: boolean;
 };
 
 export default function StudioClient({
@@ -21,6 +22,7 @@ export default function StudioClient({
   collectionLabel = "things already in the camera",
   itemNoun = "noticing",
   storageLabel = "the camera",
+  listeningFields = false,
 }: Props) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -93,9 +95,9 @@ export default function StudioClient({
       <form className="studio-paper new-entry-form" onSubmit={(event) => save(event, "POST")}>
         <span className="entry-tape" aria-hidden="true" />
         <p className="studio-number">{freshLabel}</p>
-        <EntryFields />
+        <EntryFields listening={listeningFields} />
         <label className="photo-pocket">
-          <span>drop up to 6 photos here</span>
+          <span>{listeningFields ? "drop a cover here" : "drop up to 6 photos here"}</span>
           <small>JPG, PNG, GIF or WebP · 8 MB each</small>
           <input type="file" name="photos" accept="image/*" multiple />
         </label>
@@ -115,7 +117,7 @@ export default function StudioClient({
               <summary>{entry.title || entry.shortText || `an untitled ${itemNoun}`}</summary>
               <form onSubmit={(event) => save(event, "PATCH")}>
                 <input type="hidden" name="entryId" value={entry.id} />
-                <EntryFields entry={entry} />
+                <EntryFields entry={entry} listening={listeningFields} />
                 {entry.images.length > 0 && (
                   <p className="kept-photos-note">
                     {entry.images.length} photo{entry.images.length === 1 ? " is" : "s are"} already tucked here.
@@ -144,7 +146,50 @@ export default function StudioClient({
   );
 }
 
-function EntryFields({ entry }: { entry?: ContentEntry }) {
+function EntryFields({ entry, listening = false }: { entry?: ContentEntry; listening?: boolean }) {
+  if (listening) {
+    return (
+      <div className="studio-fields listening-fields">
+        <label>
+          <span>type</span>
+          <select name="contentType" defaultValue={entry?.contentType ?? "album"}>
+            <option value="album">album</option>
+            <option value="single">single</option>
+            <option value="podcast">podcast show</option>
+            <option value="podcast-episode">podcast episode</option>
+            <option value="other">other audio</option>
+          </select>
+        </label>
+        <label>
+          <span>date <i>optional</i></span>
+          <input type="date" name="entryDate" defaultValue={entry?.entryDate ?? ""} />
+        </label>
+        <label className="field-wide">
+          <span>title</span>
+          <input name="title" defaultValue={entry?.title ?? ""} maxLength={120} />
+        </label>
+        <label className="field-wide">
+          <span>artist / creator <i>optional</i></span>
+          <input name="creator" defaultValue={entry?.creator ?? ""} maxLength={160} />
+        </label>
+        <label className="field-wide">
+          <span>my little note <i>optional</i></span>
+          <textarea name="note" defaultValue={entry?.note ?? ""} rows={4} maxLength={500} />
+        </label>
+        <label className="field-wide">
+          <span>listening URL <i>optional</i></span>
+          <input
+            type="url"
+            name="externalUrl"
+            defaultValue={entry?.externalUrl ?? ""}
+            placeholder="https://…"
+            maxLength={1000}
+          />
+        </label>
+      </div>
+    );
+  }
+
   return (
     <div className="studio-fields">
       <label>

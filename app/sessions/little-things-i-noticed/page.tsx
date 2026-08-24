@@ -23,7 +23,7 @@ export default async function NoticedSessionPage() {
   const owner = await isOwner(user?.userId);
 
   return (
-    <main className="noticed-session">
+    <main className="noticed-session camera-session physical-room">
       <span className="session-grain" aria-hidden="true" />
       <header className="noticed-heading">
         <a className="desk-return" href="/" target="_top">
@@ -48,6 +48,7 @@ export default async function NoticedSessionPage() {
               className={`noticed-entry noticed-entry-${(index % 8) + 1}${entry.images.length ? "" : " text-only-entry"}`}
               key={entry.id}
             >
+              <span className="collection-fastener" aria-hidden="true" />
               {entry.images.length > 0 && (
                 <div
                   className={`entry-photos${entry.images.length > 1 ? " photo-stack" : ""}`}

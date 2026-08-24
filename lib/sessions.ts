@@ -1,5 +1,5 @@
 export const sessions = [
-  { slug: "things-i-made", name: "things I made", object: "thread and books" },
+  { slug: "things-i-made", name: "things I made", object: "thread spool" },
   {
     slug: "little-things-i-noticed",
     name: "little things I noticed",

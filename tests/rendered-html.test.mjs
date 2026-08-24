@@ -30,6 +30,7 @@ test("server-renders the interactive desk cover", async () => {
   assert.match(html, /href="\/sessions\/things-i-made"/i);
   assert.match(html, /href="\/sessions\/favorite-drink"/i);
   assert.match(html, /href="\/sessions\/things-i-dont-want-to-forget"/i);
+  assert.match(html, /href="\/sessions\/things-i-listened-to"/i);
   assert.match(html, /target="_top"/i);
   assert.match(html, /aria-label="Open little things I noticed"/i);
   assert.match(html, /class="plant-water-label"/i);
@@ -121,4 +122,50 @@ test("opens the three new desk objects into reusable galleries and studios", asy
   assert.match(studioClient, /`\/api\/sessions\/\$\{sessionSlug\}\/entries`/);
   assert.match(studioClient, /method: "DELETE"/);
   assert.match(styles, /\.made-hotspot\s*{[^}]*width:\s*4\.7%/s);
+});
+
+test("keeps the session rooms physical and adds the listening wall", async () => {
+  const [camera, gallery, listeningPage, listeningWall, studioClient, store, schema, api, migration] =
+    await Promise.all([
+      readFile(
+        new URL("../app/sessions/little-things-i-noticed/page.tsx", import.meta.url),
+        "utf8",
+      ),
+      readFile(new URL("../app/sessions/[slug]/page.tsx", import.meta.url), "utf8"),
+      readFile(
+        new URL("../app/sessions/things-i-listened-to/page.tsx", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL("../app/sessions/things-i-listened-to/ListeningWall.tsx", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL("../app/studio/little-things-i-noticed/StudioClient.tsx", import.meta.url),
+        "utf8",
+      ),
+      readFile(new URL("../lib/content-store.ts", import.meta.url), "utf8"),
+      readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
+      readFile(
+        new URL("../app/api/sessions/[slug]/entries/route.ts", import.meta.url),
+        "utf8",
+      ),
+      readFile(new URL("../drizzle/0001_keen_the_phantom.sql", import.meta.url), "utf8"),
+    ]);
+
+  assert.match(camera, /camera-session physical-room/);
+  assert.match(gallery, /physical-room/);
+  assert.match(listeningPage, /ListeningWall/);
+  assert.match(listeningWall, /put it back/);
+  assert.match(listeningWall, /♫ listen ↗/);
+  assert.match(listeningWall, /play me something/);
+  assert.match(listeningWall, /vinyl-record/);
+  assert.match(studioClient, /name="contentType"/);
+  assert.match(studioClient, /name="creator"/);
+  assert.match(studioClient, /name="externalUrl"/);
+  assert.match(store, /content_type AS contentType/);
+  assert.match(schema, /contentType: text\("content_type"\)/);
+  assert.match(api, /Listening links must start/);
+  assert.match(migration, /ADD `content_type` text/);
+  assert.match(migration, /ADD `external_url` text/);
 });

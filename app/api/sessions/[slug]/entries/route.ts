@@ -99,6 +99,9 @@ function readFields(form: FormData): EntryFields {
     shortText: textValue(form, "shortText"),
     longText: textValue(form, "longText"),
     note: textValue(form, "note"),
+    contentType: textValue(form, "contentType"),
+    creator: textValue(form, "creator"),
+    externalUrl: textValue(form, "externalUrl"),
     isPublished: form.get("isPublished") === "on",
   };
 }
@@ -116,11 +119,29 @@ function validate(fields: EntryFields, photos: File[]) {
     !fields.shortText &&
     !fields.longText &&
     !fields.note &&
+    !fields.creator &&
+    !fields.externalUrl &&
     photos.length === 0
   ) {
     return "Add a photo or a little bit of text first.";
   }
   if (photos.length > MAX_PHOTOS) return `Choose no more than ${MAX_PHOTOS} photos.`;
+  if (
+    fields.contentType &&
+    !["album", "single", "podcast", "podcast-episode", "other"].includes(fields.contentType)
+  ) {
+    return "Choose a known listening type.";
+  }
+  if (fields.externalUrl) {
+    try {
+      const url = new URL(fields.externalUrl);
+      if (url.protocol !== "https:" && url.protocol !== "http:") {
+        return "Listening links must start with http:// or https://.";
+      }
+    } catch {
+      return "Add a complete listening link.";
+    }
+  }
   for (const photo of photos) {
     if (!photo.type.startsWith("image/")) return "Only image files can be tucked here.";
     if (photo.size > MAX_PHOTO_BYTES) return "Each photo must be smaller than 8 MB.";
