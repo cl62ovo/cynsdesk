@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getChatGPTUser } from "../../chatgpt-auth";
 import { getEntries, isOwner } from "../../../lib/content-store";
+import PhysicalCollection from "../PhysicalCollection";
 
 export const dynamic = "force-dynamic";
 
@@ -8,12 +9,6 @@ export const metadata: Metadata = {
   title: "little things I noticed · Cynthia 的桌面",
   description: "Small moments kept by the camera on Cynthia's desk.",
 };
-
-const dateFormatter = new Intl.DateTimeFormat("en", {
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-});
 
 export default async function NoticedSessionPage() {
   const [entries, user] = await Promise.all([
@@ -41,66 +36,16 @@ export default async function NoticedSessionPage() {
         <span className="scribble-line" aria-hidden="true" />
       </header>
 
-      {entries.length ? (
-        <section className="noticing-wall" aria-label="Things I noticed">
-          {entries.map((entry, index) => (
-            <article
-              className={`noticed-entry noticed-entry-${(index % 8) + 1}${entry.images.length ? "" : " text-only-entry"}`}
-              key={entry.id}
-            >
-              <span className="collection-fastener" aria-hidden="true" />
-              {entry.images.length > 0 && (
-                <div
-                  className={`entry-photos${entry.images.length > 1 ? " photo-stack" : ""}`}
-                >
-                  {entry.images.map((image) => (
-                    <figure className="memory-photo" key={image.id}>
-                      <img
-                        src={`/media/${image.objectKey}`}
-                        alt={image.altText || entry.title || "A small noticed moment"}
-                      />
-                      {image.caption && <figcaption>{image.caption}</figcaption>}
-                    </figure>
-                  ))}
-                </div>
-              )}
-
-              <div className="entry-note">
-                <span className="entry-tape" aria-hidden="true" />
-                {entry.entryDate && (
-                  <time dateTime={entry.entryDate}>{formatDate(entry.entryDate)}</time>
-                )}
-                {entry.title && <h2>{entry.title}</h2>}
-                {entry.shortText && <p className="entry-short">{entry.shortText}</p>}
-                {entry.longText && <p className="entry-long">{entry.longText}</p>}
-                {entry.note && <p className="margin-note">↳ {entry.note}</p>}
-              </div>
-            </article>
-          ))}
-        </section>
-      ) : (
-        <section className="empty-noticing-wall">
-          <span className="empty-photo-window" aria-hidden="true" />
-          <p>nothing has been tucked behind this photo yet.</p>
-          <small>the camera is waiting.</small>
-        </section>
-      )}
-
-      {owner && (
-        <a
-          className="owner-add-polaroid"
-          href="/studio/little-things-i-noticed"
-          target="_top"
-        >
-          <span aria-hidden="true">＋</span>
-          add another noticing
-        </a>
-      )}
+      <PhysicalCollection
+        entries={entries}
+        room="camera"
+        roomName="Things I noticed"
+        owner={owner}
+        studioHref="/studio/little-things-i-noticed"
+        addLabel="add another noticing"
+        emptyText="nothing has been tucked behind this photo yet."
+        emptyHint="the camera is waiting."
+      />
     </main>
   );
-}
-
-function formatDate(value: string) {
-  const date = new Date(`${value}T12:00:00`);
-  return Number.isNaN(date.getTime()) ? value : dateFormatter.format(date);
 }

@@ -122,3 +122,29 @@
 @media (max-width: 650px) { .time-archive { padding-inline: 8px; } .archive-calendar-paper { padding-inline: 21px; } .archive-entry { display: block; width: 96%; padding: 23px; } .archive-entry figure { width: 70%; margin: 0 auto 20px; } .archive-turn-1, .archive-turn-2, .archive-turn-3 { transform: rotate(.2deg); } .archive-flow::before { left: 12px; } .archive-week header small { display: block; margin: 5px 0 0; } }
 @media (max-width: 650px) { .photo-spread > div { grid-template-columns: repeat(2, 1fr); } .kept-shelves, .words-spread { grid-template-columns: 1fr; } .connection-spread > div { grid-template-columns: 1fr; } .connection-spread div > span { transform: rotate(90deg); } .month-cover-spread { padding-inline: 18px; } }
 @media (prefers-reduced-motion: reduce) { .archive-entry, .archive-calendar-paper, .archive-ai-paper { transform: none; } }
+
+/* The calendar opens into another paper object, not a separate utility page. */
+.time-archive { isolation: isolate; }
+.time-archive::after {
+  content: "";
+  position: fixed;
+  inset: 7px 8px;
+  z-index: 50;
+  border: 1px solid rgba(83,64,48,.08);
+  border-radius: 48% 52% 49% 51% / 1.2% 1.4% 1.1% 1.5%;
+  pointer-events: none;
+}
+.archive-heading > a {
+  padding: 7px 11px 6px;
+  background: rgba(238,220,172,.78);
+  box-shadow: 2px 4px 0 rgba(70,52,38,.1);
+  clip-path: polygon(2% 5%, 31% 1%, 62% 5%, 98% 2%, 100% 88%, 91% 100%, 3% 96%);
+  transform: rotate(-2deg);
+}
+.archive-calendar-paper,
+.archive-ai-paper,
+.month-spread,
+.archive-entry {
+  border-radius: 0;
+  filter: drop-shadow(3px 6px 5px rgba(67,48,35,.09));
+}

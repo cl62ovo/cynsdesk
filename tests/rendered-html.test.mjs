@@ -44,12 +44,13 @@ test("server-renders the interactive desk cover", async () => {
 });
 
 test("keeps the first session on the reusable content system", async () => {
-  const [homePage, sessionPage, studio, studioClient, apiRoute, contentStore, schema, registry] = await Promise.all([
+  const [homePage, sessionPage, physicalCollection, studio, studioClient, apiRoute, contentStore, schema, registry] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../app/sessions/little-things-i-noticed/page.tsx", import.meta.url),
       "utf8",
     ),
+    readFile(new URL("../app/sessions/PhysicalCollection.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../app/studio/little-things-i-noticed/page.tsx", import.meta.url),
       "utf8",
@@ -68,8 +69,11 @@ test("keeps the first session on the reusable content system", async () => {
   ]);
 
   assert.match(sessionPage, /getEntries\("little-things-i-noticed"\)/);
-  assert.match(sessionPage, /owner-add-polaroid/);
-  assert.match(sessionPage, /index % 8/);
+  assert.match(sessionPage, /PhysicalCollection/);
+  assert.match(physicalCollection, /owner-add-polaroid/);
+  assert.match(physicalCollection, /index % 8/);
+  assert.match(physicalCollection, /physical-detail-backdrop/);
+  assert.match(physicalCollection, /back to the wall/);
   assert.match(studio, /getOwnerId/);
   assert.match(studioClient, /method: "DELETE"/);
   assert.match(studioClient, /window\.confirm/);
@@ -121,7 +125,7 @@ test("opens the three new desk objects into reusable galleries and studios", asy
   }
 
   assert.match(galleryPage, /getEntries\(config\.slug\)/);
-  assert.match(galleryPage, /href={`\/studio\/\$\{config\.slug\}`}/);
+  assert.match(galleryPage, /studioHref={`\/studio\/\$\{config\.slug\}`}/);
   assert.match(studioPage, /getEntries\(config\.slug, true\)/);
   assert.match(studioClient, /`\/api\/sessions\/\$\{sessionSlug\}\/entries`/);
   assert.match(studioClient, /method: "DELETE"/);

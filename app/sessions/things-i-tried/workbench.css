@@ -481,3 +481,23 @@
   .bench-detail-backdrop,
   .bench-detail { animation: none; }
 }
+
+/* Keep the workbench inside the same imperfect paper world as the other rooms. */
+.tinkering-room { isolation: isolate; }
+.tinkering-room::after {
+  content: "";
+  position: fixed;
+  inset: 7px 8px;
+  z-index: 50;
+  border: 1px solid rgba(83,64,48,.08);
+  border-radius: 48% 52% 49% 51% / 1.2% 1.4% 1.1% 1.5%;
+  pointer-events: none;
+}
+.bench-back { clip-path: polygon(2% 5%, 31% 1%, 62% 5%, 98% 2%, 100% 88%, 91% 100%, 3% 96%); }
+.bench-detail-backdrop {
+  background:
+    radial-gradient(circle at 23% 17%, rgba(229,208,172,.16), transparent 24rem),
+    rgba(47,39,33,.6);
+  backdrop-filter: none;
+}
+.bench-detail { box-shadow: 13px 19px 0 rgba(65,47,34,.13), 16px 24px 45px rgba(34,27,22,.32); }

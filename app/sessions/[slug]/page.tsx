@@ -2,14 +2,9 @@ import type { Metadata } from "next";
 import { getChatGPTUser } from "../../chatgpt-auth";
 import { getEntries, isOwner } from "../../../lib/content-store";
 import { getIllustratedSession } from "../../../lib/illustrated-sessions";
+import PhysicalCollection from "../PhysicalCollection";
 
 export const dynamic = "force-dynamic";
-
-const dateFormatter = new Intl.DateTimeFormat("en", {
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-});
 
 export async function generateMetadata({
   params,
@@ -60,60 +55,22 @@ export default async function IllustratedSessionPage({
         <span className="scribble-line" aria-hidden="true" />
       </header>
 
-      {entries.length ? (
-        <section className="noticing-wall session-collage" aria-label={config.name}>
-          {entries.map((entry, index) => (
-            <article
-              className={`noticed-entry noticed-entry-${(index % 8) + 1}${entry.images.length ? "" : " text-only-entry"}`}
-              key={entry.id}
-            >
-              <span className="collection-fastener" aria-hidden="true" />
-              {entry.images.length > 0 && (
-                <div className={`entry-photos${entry.images.length > 1 ? " photo-stack" : ""}`}>
-                  {entry.images.map((image) => (
-                    <figure className="memory-photo" key={image.id}>
-                      <img
-                        src={`/media/${image.objectKey}`}
-                        alt={image.altText || entry.title || `A kept item from ${config.name}`}
-                      />
-                      {image.caption && <figcaption>{image.caption}</figcaption>}
-                    </figure>
-                  ))}
-                </div>
-              )}
-
-              <div className="entry-note">
-                <span className="entry-tape" aria-hidden="true" />
-                {entry.entryDate && (
-                  <time dateTime={entry.entryDate}>{formatDate(entry.entryDate)}</time>
-                )}
-                {entry.title && <h2>{entry.title}</h2>}
-                {entry.shortText && <p className="entry-short">{entry.shortText}</p>}
-                {entry.longText && <p className="entry-long">{entry.longText}</p>}
-                {entry.note && <p className="margin-note">↳ {entry.note}</p>}
-              </div>
-            </article>
-          ))}
-        </section>
-      ) : (
-        <section className="empty-noticing-wall session-empty-slot">
-          <span className="empty-photo-window" aria-hidden="true" />
-          <p>{config.emptyText}</p>
-          <small>{config.emptyHint}</small>
-        </section>
-      )}
-
-      {owner && (
-        <a className="owner-add-polaroid" href={`/studio/${config.slug}`} target="_top">
-          <span aria-hidden="true">＋</span>
-          {config.addLabel}
-        </a>
-      )}
+      <PhysicalCollection
+        entries={entries}
+        room={roomKind(config.slug)}
+        roomName={config.name}
+        owner={owner}
+        studioHref={`/studio/${config.slug}`}
+        addLabel={config.addLabel}
+        emptyText={config.emptyText}
+        emptyHint={config.emptyHint}
+      />
     </main>
   );
 }
 
-function formatDate(value: string) {
-  const date = new Date(`${value}T12:00:00`);
-  return Number.isNaN(date.getTime()) ? value : dateFormatter.format(date);
+function roomKind(slug: string): "made" | "drink" | "forget" {
+  if (slug === "favorite-drink") return "drink";
+  if (slug === "things-i-dont-want-to-forget") return "forget";
+  return "made";
 }

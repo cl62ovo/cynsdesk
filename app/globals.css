@@ -3901,3 +3901,252 @@ body {
 .compact-document-pocket { margin-top: -4px; }
 .workbench-fields textarea { min-height: 74px; }
 .add-more-photos { margin-top: 24px; background: rgba(235,222,191,.48); }
+
+/* Continuous room system v3: every collection behaves like an object in Cynthia's room. */
+.noticed-session,
+.listening-room,
+.pages-room,
+.thought-room { isolation: isolate; }
+
+.noticed-session::after,
+.listening-room::after,
+.pages-room::after,
+.thought-room::after {
+  content: "";
+  position: fixed;
+  inset: 7px 8px;
+  z-index: 40;
+  border: 1px solid rgba(83,64,48,.08);
+  border-radius: 48% 52% 49% 51% / 1.2% 1.4% 1.1% 1.5%;
+  pointer-events: none;
+  transform: rotate(.04deg);
+}
+
+.noticed-heading::before,
+.listening-heading::before,
+.pages-heading::before {
+  content: "from Cynthia's desk";
+  position: absolute;
+  right: 3%;
+  top: 33px;
+  padding: 6px 10px 5px;
+  border: 1px solid rgba(99,73,55,.18);
+  background: rgba(231,215,181,.72);
+  color: rgba(103,77,60,.68);
+  font: 8px/1.2 "Courier New", monospace;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  transform: rotate(2deg);
+}
+
+.desk-return,
+.thought-back {
+  clip-path: polygon(2% 5%, 31% 1%, 62% 5%, 98% 2%, 100% 88%, 91% 100%, 3% 96%);
+  box-shadow: 2px 4px 0 rgba(70,52,38,.1);
+}
+
+.physical-room .noticed-entry { transition: filter .22s ease, transform .22s ease; }
+.physical-room .noticed-entry:hover,
+.physical-room .noticed-entry:focus-within {
+  z-index: 12;
+  filter: drop-shadow(7px 11px 7px rgba(61,45,33,.15));
+}
+
+.physical-entry-pickup {
+  position: absolute;
+  inset: -9px;
+  z-index: 9;
+  display: block;
+  width: calc(100% + 18px);
+  height: calc(100% + 18px);
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  outline: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.physical-entry-pickup:focus-visible {
+  outline: 2px dashed rgba(137,91,72,.68);
+  outline-offset: 7px;
+}
+
+.physical-piece-open { overflow: hidden; }
+
+.physical-detail-backdrop,
+.listening-detail-backdrop,
+.pages-detail-backdrop,
+.thought-detail-backdrop {
+  background:
+    radial-gradient(circle at 23% 17%, rgba(229,208,172,.16), transparent 24rem),
+    rgba(47,39,33,.6);
+  backdrop-filter: none;
+}
+
+.physical-detail-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  padding: 28px;
+  place-items: center;
+  overflow-y: auto;
+  animation: physical-room-dim .18s ease-out both;
+}
+
+.physical-detail {
+  position: relative;
+  display: grid;
+  width: min(920px, 100%);
+  max-height: calc(100vh - 56px);
+  padding: 53px 48px 42px;
+  grid-template-columns: minmax(0, .92fr) minmax(260px, 1.08fr);
+  gap: 38px;
+  overflow-y: auto;
+  background:
+    linear-gradient(37deg, transparent 0 29%, rgba(77,58,43,.05) 29.3%, transparent 30%),
+    repeating-linear-gradient(0deg, transparent 0 27px, rgba(92,70,53,.04) 28px),
+    #eee4d1;
+  box-shadow: 13px 19px 0 rgba(65,47,34,.13), 16px 24px 45px rgba(34,27,22,.32);
+  clip-path: polygon(1% 2%, 31% 0, 57% 3%, 98% 1%, 100% 42%, 98% 96%, 89% 100%, 56% 97%, 29% 100%, 1% 97%, 3% 54%);
+  animation: lift-from-room .24s cubic-bezier(.2,.75,.25,1) both;
+}
+
+.physical-detail:not(.has-detail-photos) { grid-template-columns: minmax(0, 1fr); }
+.physical-detail:not(.has-detail-photos) .physical-detail-writing { width: min(650px, 100%); margin: auto; }
+
+.physical-detail-fastener {
+  position: absolute;
+  left: 50%;
+  top: 7px;
+  z-index: 5;
+  width: 92px;
+  height: 25px;
+  background: rgba(205,169,126,.75);
+  transform: translateX(-50%) rotate(-2deg);
+}
+
+.physical-detail-camera .physical-detail-fastener {
+  width: 15px;
+  height: 15px;
+  border: 1px solid #6e5a3f;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 28%, #fff0a1 0 9%, #a88a48 24%, #655431 72%);
+  box-shadow: 2px 3px 4px rgba(58,44,31,.28);
+}
+
+.physical-detail-drink {
+  background:
+    radial-gradient(circle at 88% 13%, transparent 0 35px, rgba(138,84,54,.1) 36px 39px, transparent 40px),
+    repeating-linear-gradient(0deg, transparent 0 27px, rgba(92,70,53,.04) 28px),
+    #f0dfc3;
+}
+
+.physical-detail-forget {
+  background: linear-gradient(90deg, rgba(109,78,56,.04) 50%, transparent 50%), #e9decd;
+  box-shadow: -10px 12px 0 #b79a78, 13px 19px 40px rgba(34,27,22,.3);
+}
+
+.physical-detail-photos {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 17px 8px;
+}
+
+.physical-detail-photos figure {
+  width: min(285px, 88%);
+  margin: 0;
+  padding: 10px 10px 29px;
+  background: #f8f2e5;
+  box-shadow: 4px 7px 10px rgba(61,44,32,.19);
+  transform: rotate(var(--detail-turn));
+}
+
+.physical-detail-photos figure:nth-child(n + 2) { width: min(205px, 44%); }
+.physical-detail-photos img { display: block; width: 100%; max-height: 330px; object-fit: cover; filter: saturate(.86) sepia(.055); }
+.physical-detail-photos figcaption { margin: 7px 3px -18px; color: #7c695a; font: 10px/1.25 "Comic Sans MS", "Bradley Hand", cursive; }
+
+.physical-detail-writing { position: relative; align-self: center; color: #54463b; }
+.physical-detail-kind { margin: 0 0 6px; color: #9a6557; font: 9px/1.2 "Courier New", monospace; letter-spacing: .12em; text-transform: uppercase; }
+.physical-detail-writing time { color: #927463; font: 9px/1.2 "Courier New", monospace; text-transform: uppercase; }
+.physical-detail-writing h2 { margin: 9px 0 16px; font: 400 clamp(29px, 4.6vw, 48px)/1.12 "Comic Sans MS", "Bradley Hand", cursive; letter-spacing: -.04em; }
+.physical-detail-creator { color: #776457; font-style: italic; }
+.physical-detail-short { font-size: 17px; font-style: italic; line-height: 1.62; }
+.physical-detail-long { font-size: 14px; line-height: 1.72; white-space: pre-wrap; }
+
+.physical-detail-writing aside {
+  margin: 23px -4px 18px 12px;
+  padding: 16px 18px 14px;
+  background: #e6d487;
+  box-shadow: 2px 4px 5px rgba(64,46,32,.12);
+  color: #604f42;
+  font: 12px/1.55 "Comic Sans MS", "Bradley Hand", cursive;
+  transform: rotate(1.2deg);
+}
+
+.physical-detail-writing aside small { color: #8b6454; font: 8px/1.2 "Courier New", monospace; letter-spacing: .08em; text-transform: uppercase; }
+.physical-detail-writing aside p { margin: 6px 0 0; }
+.physical-detail-writing > a,
+.physical-detail-writing > button,
+.physical-detail-files a {
+  display: inline-block;
+  margin: 9px 13px 0 0;
+  padding: 8px 10px 6px;
+  border: 0;
+  border-bottom: 1px solid rgba(102,76,58,.45);
+  background: transparent;
+  color: #8b584e;
+  cursor: pointer;
+  font: 12px/1.25 "Comic Sans MS", "Bradley Hand", cursive;
+  text-decoration: none;
+}
+
+.physical-detail-writing > button { color: #67564a; }
+.physical-detail-files { margin-top: 7px; }
+.physical-detail-files a { background: rgba(232,220,194,.7); transform: rotate(-1deg); }
+
+.owner-add-polaroid {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  margin: -38px max(28px, 8vw) 76px auto;
+  clip-path: polygon(2% 2%, 97% 5%, 100% 92%, 89% 98%, 5% 96%, 0 15%);
+}
+
+.made-session .owner-add-polaroid::before { content: "unfinished"; position: absolute; left: 12px; top: 9px; color: rgba(95,112,91,.55); font: 7px/1 "Courier New", monospace; }
+.drink-session .owner-add-polaroid::before { content: "order note"; position: absolute; left: 12px; top: 9px; color: rgba(138,88,61,.55); font: 7px/1 "Courier New", monospace; }
+.forget-session .owner-add-polaroid::before { content: "empty drawer label"; position: absolute; left: 12px; top: 9px; color: rgba(107,76,55,.52); font: 7px/1 "Courier New", monospace; }
+
+.listening-detail,
+.pages-detail,
+.thought-detail { box-shadow: 11px 17px 0 rgba(65,47,34,.12), 15px 22px 42px rgba(35,27,21,.32); }
+.listening-detail { clip-path: polygon(1% 2%, 34% 0, 63% 3%, 99% 1%, 97% 96%, 78% 100%, 3% 97%); }
+.pages-detail { border-radius: 0; }
+
+@keyframes physical-room-dim { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lift-from-room {
+  from { opacity: 0; transform: translateY(20px) rotate(-1.4deg) scale(.94); }
+  to { opacity: 1; transform: translateY(0) rotate(.2deg) scale(1); }
+}
+
+@media (max-width: 620px) {
+  .noticed-heading::before,
+  .listening-heading::before,
+  .pages-heading::before { display: none; }
+  .physical-detail-backdrop { padding: 13px; }
+  .physical-detail { max-height: calc(100vh - 26px); padding: 46px 25px 34px; grid-template-columns: 1fr; gap: 27px; }
+  .physical-detail-photos figure { width: min(270px, 92%); }
+  .physical-detail-photos figure:nth-child(n + 2) { width: 44%; }
+  .physical-detail-writing h2 { font-size: 31px; }
+  .owner-add-polaroid { margin: -24px auto 68px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .physical-room .noticed-entry { transition: none; }
+  .physical-detail-backdrop,
+  .physical-detail { animation: none; }
+}
