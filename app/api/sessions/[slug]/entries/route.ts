@@ -11,6 +11,8 @@ import { getSession } from "../../../../../lib/sessions";
 
 const MAX_PHOTOS = 10;
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
+const MAX_DOCUMENTS = 5;
+const MAX_DOCUMENT_BYTES = 25 * 1024 * 1024;
 
 export async function POST(
   request: Request,
@@ -31,13 +33,14 @@ export async function POST(
   const photos = form
     .getAll("photos")
     .filter((value): value is File => value instanceof File && value.size > 0);
+  const documents = readDocuments(form);
 
-  const validationError = validate(fields, photos);
+  const validationError = validate(fields, photos, documents);
   if (validationError) {
     return Response.json({ error: validationError }, { status: 400 });
   }
 
-  const id = await createEntry(slug, fields, photos);
+  const id = await createEntry(slug, fields, photos, documents);
   return Response.json({ ok: true, id }, { status: 201 });
 }
 
@@ -63,12 +66,13 @@ export async function PATCH(
   const photos = form
     .getAll("photos")
     .filter((value): value is File => value instanceof File && value.size > 0);
-  const validationError = validate(fields, photos);
+  const documents = readDocuments(form);
+  const validationError = validate(fields, photos, documents);
   if (validationError) {
     return Response.json({ error: validationError }, { status: 400 });
   }
 
-  const updated = await updateEntry(entryId, slug, fields, photos);
+  const updated = await updateEntry(entryId, slug, fields, photos, documents);
   if (!updated) return Response.json({ error: "Entry not found." }, { status: 404 });
   return Response.json({ ok: true });
 }
@@ -165,7 +169,7 @@ function textValue(form: FormData, key: string) {
   return trimmed || null;
 }
 
-function validate(fields: EntryFields, photos: File[]) {
+function validate(fields: EntryFields, photos: File[], documents: File[]) {
   const hasWorkbenchText = hasMeaningfulWorkbenchData(fields.extraData);
   if (
     !fields.title &&
@@ -175,11 +179,13 @@ function validate(fields: EntryFields, photos: File[]) {
     !fields.creator &&
     !fields.externalUrl &&
     !hasWorkbenchText &&
-    photos.length === 0
+    photos.length === 0 &&
+    documents.length === 0
   ) {
     return "Add a photo or a little bit of text first.";
   }
   if (photos.length > MAX_PHOTOS) return `Choose no more than ${MAX_PHOTOS} photos.`;
+  if (documents.length > MAX_DOCUMENTS) return `Choose no more than ${MAX_DOCUMENTS} PDF files.`;
   if (
     fields.contentType &&
     ![
@@ -207,7 +213,19 @@ function validate(fields: EntryFields, photos: File[]) {
     if (!photo.type.startsWith("image/")) return "Only image files can be tucked here.";
     if (photo.size > MAX_PHOTO_BYTES) return "Each photo must be smaller than 8 MB.";
   }
+  for (const document of documents) {
+    if (document.type !== "application/pdf" && !document.name.toLowerCase().endsWith(".pdf")) {
+      return "Only PDF documents can be clipped to the workbench.";
+    }
+    if (document.size > MAX_DOCUMENT_BYTES) return "Each PDF must be smaller than 25 MB.";
+  }
   return null;
+}
+
+function readDocuments(form: FormData) {
+  return form
+    .getAll("documents")
+    .filter((value): value is File => value instanceof File && value.size > 0);
 }
 
 function hasMeaningfulWorkbenchData(value: string | null) {

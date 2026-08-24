@@ -223,6 +223,7 @@ function starter(id: string, title: string, shortText?: string): WallThought {
     createdAt: 0,
     updatedAt: 0,
     images: [],
+    files: [],
     starter: true,
   };
 }

@@ -262,3 +262,32 @@ test("turns the laptop into an evolving tinkering workbench", async () => {
   assert.match(styles, /\.tinkering-bench/);
   assert.match(styles, /\.kind-embroidery \.object-visual/);
 });
+
+test("gives the private workbench editor photo, link, and PDF attachments", async () => {
+  const [page, bench, studio, api, store, schema, migration, styles] = await Promise.all([
+    readFile(new URL("../app/sessions/things-i-tried/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/sessions/things-i-tried/TinkeringWorkbench.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/studio/little-things-i-noticed/StudioClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/sessions/[slug]/entries/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/content-store.ts", import.meta.url), "utf8"),
+    readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
+    readFile(new URL("../drizzle/0003_strange_northstar.sql", import.meta.url), "utf8"),
+    readFile(new URL("../app/sessions/things-i-tried/workbench.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(page, /showStudioDoor/);
+  assert.match(bench, /edit \/ add things/);
+  assert.match(bench, /edit this attempt/);
+  assert.match(bench, /papers \/ ebooks clipped here/);
+  assert.match(studio, /name="documents"/);
+  assert.match(studio, /application\/pdf/);
+  assert.match(studio, /id={`entry-\$\{entry\.id\}`}/);
+  assert.match(api, /MAX_DOCUMENT_BYTES/);
+  assert.match(api, /Only PDF documents/);
+  assert.match(store, /export type ContentFile/);
+  assert.match(store, /CREATE TABLE IF NOT EXISTS entry_files/);
+  assert.match(store, /documents: File\[\] = \[\]/);
+  assert.match(schema, /export const entryFiles/);
+  assert.match(migration, /CREATE TABLE `entry_files`/);
+  assert.match(styles, /\.pdf-scraps/);
+});

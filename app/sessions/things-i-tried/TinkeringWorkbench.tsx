@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ContentEntry } from "../../../lib/content-store";
 
-type Props = { entries: ContentEntry[]; owner: boolean };
+type Props = { entries: ContentEntry[]; owner: boolean; showStudioDoor: boolean };
 type WorkbenchExtra = Record<string, string>;
 type BenchEntry = ContentEntry & { starter?: boolean };
 
@@ -16,7 +16,7 @@ const starterAttempts: BenchEntry[] = [
   sample("sound-thing", "idea", "coding", "make something that reacts to sound", null, "tiny spark"),
 ];
 
-export default function TinkeringWorkbench({ entries, owner }: Props) {
+export default function TinkeringWorkbench({ entries, owner, showStudioDoor }: Props) {
   const [selected, setSelected] = useState<BenchEntry | null>(null);
   const pieces = useMemo(() => (entries.length ? entries : starterAttempts), [entries]);
 
@@ -43,6 +43,11 @@ export default function TinkeringWorkbench({ entries, owner }: Props) {
           <small>some worked · some didn&apos;t · some are still becoming</small>
         </div>
         <p className="just-here-note">Cynthia was just here.<br />she&apos;s probably coming back.</p>
+        {showStudioDoor && (
+          <a className="bench-edit-door" href="/studio/things-i-tried" target="_top">
+            {owner ? "edit / add things →" : "open the private editor →"}
+          </a>
+        )}
       </header>
 
       <section className="tinkering-bench" aria-label="Cynthia's tinkering workbench">
@@ -75,6 +80,14 @@ export default function TinkeringWorkbench({ entries, owner }: Props) {
                     ))}
                   </span>
                 )}
+                {entry.files.length > 0 && (
+                  <span className="bench-pdf-clip">
+                    PDF<br /><small>{entry.files.length} clipped</small>
+                  </span>
+                )}
+                {(entry.externalUrl || extras.referenceLinks) && (
+                  <span className="bench-link-clip">www ↗</span>
+                )}
                 <span className="bench-label">
                   <small>{stageLabel(stage)}</small>
                   <strong>{entry.title || entry.shortText || "an unnamed experiment"}</strong>
@@ -86,7 +99,7 @@ export default function TinkeringWorkbench({ entries, owner }: Props) {
           );
         })}
 
-        {owner && (
+        {showStudioDoor && (
           <a className="try-something-sheet" href="/studio/things-i-tried" target="_top">
             <span aria-hidden="true">✎</span>
             try something?
@@ -103,13 +116,13 @@ export default function TinkeringWorkbench({ entries, owner }: Props) {
       {!entries.length && <p className="bench-starter-note">a few sample traces, until your own experiments take over the bench</p>}
 
       {selected && (
-        <WorkbenchDetail entry={selected} onClose={() => setSelected(null)} />
+        <WorkbenchDetail entry={selected} owner={owner} onClose={() => setSelected(null)} />
       )}
     </main>
   );
 }
 
-function WorkbenchDetail({ entry, onClose }: { entry: BenchEntry; onClose: () => void }) {
+function WorkbenchDetail({ entry, owner, onClose }: { entry: BenchEntry; owner: boolean; onClose: () => void }) {
   const extras = parseExtras(entry.extraData);
   const stage = stageOf(entry.contentType);
   const links = referenceLinks(extras.referenceLinks, entry.externalUrl);
@@ -182,6 +195,27 @@ function WorkbenchDetail({ entry, onClose }: { entry: BenchEntry; onClose: () =>
           </nav>
         )}
 
+        {entry.files.length > 0 && (
+          <section className="pdf-scraps" aria-label="PDF files and ebooks">
+            <h3>papers / ebooks clipped here</h3>
+            <div>
+              {entry.files.map((file) => (
+                <a href={`/media/${file.objectKey}`} target="_blank" rel="noreferrer" key={file.id}>
+                  <span aria-hidden="true">PDF</span>
+                  {file.originalName}
+                  <small>open the pages ↗</small>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {owner && !entry.starter && (
+          <a className="edit-this-attempt" href={`/studio/things-i-tried#entry-${entry.id}`} target="_top">
+            edit this attempt ✎
+          </a>
+        )}
+
         <button className="put-project-back" type="button" onClick={onClose}>leave it on the bench</button>
       </section>
     </div>
@@ -207,6 +241,7 @@ function sample(id: string, stage: string, kind: string, title: string, shortTex
     createdAt: now,
     updatedAt: now,
     images: [],
+    files: [],
     starter: true,
   };
 }

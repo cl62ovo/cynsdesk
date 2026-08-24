@@ -54,3 +54,19 @@ export const entryImages = sqliteTable(
   },
   (table) => [index("idx_entry_images_entry_order").on(table.entryId, table.sortOrder)],
 );
+
+export const entryFiles = sqliteTable(
+  "entry_files",
+  {
+    id: text("id").primaryKey(),
+    entryId: text("entry_id")
+      .notNull()
+      .references(() => entries.id, { onDelete: "cascade" }),
+    objectKey: text("object_key").notNull().unique(),
+    originalName: text("original_name").notNull(),
+    mimeType: text("mime_type").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [index("idx_entry_files_entry_order").on(table.entryId, table.sortOrder)],
+);

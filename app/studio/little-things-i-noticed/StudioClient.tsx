@@ -120,6 +120,7 @@ export default function StudioClient({
           <small>up to 10 · JPG, PNG, GIF or WebP · 8 MB each</small>
           <input type="file" name="photos" accept="image/*" multiple />
         </label>
+        {workbenchFields && <DocumentPocket />}
         <PublishField />
         <button className="studio-save" type="submit" disabled={busy}>
           {busy ? "tucking it away…" : "keep this one"}
@@ -132,7 +133,7 @@ export default function StudioClient({
         <section className="studio-existing" aria-label="Edit existing entries">
           <h2>{collectionLabel}</h2>
           {entries.map((entry) => (
-            <details className="edit-scrap" key={entry.id}>
+            <details className="edit-scrap" id={`entry-${entry.id}`} key={entry.id}>
               <summary>{entry.title || entry.shortText || `an untitled ${itemNoun}`}</summary>
               <form onSubmit={(event) => save(event, "PATCH")}>
                 <input type="hidden" name="entryId" value={entry.id} />
@@ -144,15 +145,23 @@ export default function StudioClient({
                   workbench={workbenchFields}
                 />
                 {workbenchFields && (
-                  <label className="photo-pocket add-more-photos">
-                    <span>add more traces of trying</span>
-                    <small>new photos will join the ones already here</small>
-                    <input type="file" name="photos" accept="image/*" multiple />
-                  </label>
+                  <>
+                    <label className="photo-pocket add-more-photos">
+                      <span>add more traces of trying</span>
+                      <small>new photos will join the ones already here</small>
+                      <input type="file" name="photos" accept="image/*" multiple />
+                    </label>
+                    <DocumentPocket compact />
+                  </>
                 )}
                 {entry.images.length > 0 && (
                   <p className="kept-photos-note">
                     {entry.images.length} photo{entry.images.length === 1 ? " is" : "s are"} already tucked here.
+                  </p>
+                )}
+                {entry.files.length > 0 && (
+                  <p className="kept-photos-note">
+                    {entry.files.length} PDF {entry.files.length === 1 ? "is" : "files are"} already clipped here.
                   </p>
                 )}
                 <PublishField checked={entry.isPublished} />
@@ -175,6 +184,16 @@ export default function StudioClient({
         </section>
       )}
     </>
+  );
+}
+
+function DocumentPocket({ compact = false }: { compact?: boolean }) {
+  return (
+    <label className={`photo-pocket document-pocket${compact ? " compact-document-pocket" : ""}`}>
+      <span>{compact ? "clip on more PDF notes / ebooks" : "clip on PDF files or ebooks"}</span>
+      <small>up to 5 at a time · PDF only · 25 MB each</small>
+      <input type="file" name="documents" accept="application/pdf,.pdf" multiple />
+    </label>
   );
 }
 

@@ -3696,3 +3696,45 @@ body {
 .tried-hotspot:focus-visible::before { opacity: .95; transform: rotate(1deg) translateY(0); }
 .tried-hotspot:hover::after,
 .tried-hotspot:focus-visible::after { transform: rotate(-.5deg) scale(1.025); }
+
+.workbench-session {
+  --room-paper: #e9dfca;
+  --room-accent: #986356;
+  --room-tape: rgba(201,164,122,.72);
+  background:
+    radial-gradient(circle at 18% 7%, rgba(255,255,255,.68), transparent 27rem),
+    repeating-linear-gradient(91deg, transparent 0 8px, rgba(79,61,46,.02) 9px 10px),
+    #e8e2d7;
+}
+
+.workbench-session .studio-paper,
+.workbench-session .edit-scrap,
+.workbench-session .claim-card {
+  background:
+    linear-gradient(35deg, transparent 0 67%, rgba(75,57,43,.05) 67.3%, transparent 68%),
+    repeating-linear-gradient(0deg, transparent 0 25px, rgba(95,73,54,.05) 26px),
+    var(--room-paper);
+}
+
+.document-pocket {
+  border-style: solid dashed dashed;
+  background:
+    linear-gradient(135deg, transparent 0 83%, rgba(131,88,72,.08) 84%),
+    rgba(235,222,191,.48);
+}
+
+.document-pocket::before {
+  content: "PDF";
+  display: block;
+  width: fit-content;
+  margin: 0 auto 4px;
+  padding: 5px 7px 4px;
+  border: 1px solid rgba(132,77,67,.5);
+  color: #925e54;
+  font: 9px/1 "Courier New", monospace;
+  transform: rotate(-2deg);
+}
+
+.compact-document-pocket { margin-top: -4px; }
+.workbench-fields textarea { min-height: 74px; }
+.add-more-photos { margin-top: 24px; background: rgba(235,222,191,.48); }

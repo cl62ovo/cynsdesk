@@ -11,6 +11,15 @@ export type ContentImage = {
   sortOrder: number;
 };
 
+export type ContentFile = {
+  id: string;
+  entryId: string;
+  objectKey: string;
+  originalName: string;
+  mimeType: string;
+  sortOrder: number;
+};
+
 export type ContentEntry = {
   id: string;
   sessionSlug: string;
@@ -28,13 +37,15 @@ export type ContentEntry = {
   createdAt: number;
   updatedAt: number;
   images: ContentImage[];
+  files: ContentFile[];
 };
 
-type EntryRow = Omit<ContentEntry, "images" | "isPublished"> & {
+type EntryRow = Omit<ContentEntry, "images" | "files" | "isPublished"> & {
   isPublished: number;
 };
 
 type ImageRow = ContentImage;
+type FileRow = ContentFile;
 
 let schemaReady: Promise<void> | null = null;
 
@@ -88,10 +99,21 @@ export async function ensureContentSchema() {
           sort_order INTEGER NOT NULL DEFAULT 0,
           created_at INTEGER NOT NULL
         )`),
+        db.prepare(`CREATE TABLE IF NOT EXISTS entry_files (
+          id TEXT PRIMARY KEY,
+          entry_id TEXT NOT NULL REFERENCES entries(id) ON DELETE CASCADE,
+          object_key TEXT NOT NULL UNIQUE,
+          original_name TEXT NOT NULL,
+          mime_type TEXT NOT NULL,
+          sort_order INTEGER NOT NULL DEFAULT 0,
+          created_at INTEGER NOT NULL
+        )`),
         db.prepare(`CREATE INDEX IF NOT EXISTS idx_entries_session_published_date
           ON entries(session_slug, is_published, entry_date)`),
         db.prepare(`CREATE INDEX IF NOT EXISTS idx_entry_images_entry_order
           ON entry_images(entry_id, sort_order)`),
+        db.prepare(`CREATE INDEX IF NOT EXISTS idx_entry_files_entry_order
+          ON entry_files(entry_id, sort_order)`),
       ]);
 
       const columnResult = await db
@@ -175,6 +197,16 @@ export async function getEntries(
     )
     .bind(...rows.map((row) => row.id))
     .all<ImageRow>();
+  const fileResult = await database()
+    .prepare(
+      `SELECT id, entry_id AS entryId, object_key AS objectKey,
+        original_name AS originalName, mime_type AS mimeType,
+        sort_order AS sortOrder
+      FROM entry_files WHERE entry_id IN (${placeholders})
+      ORDER BY sort_order ASC, created_at ASC`,
+    )
+    .bind(...rows.map((row) => row.id))
+    .all<FileRow>();
 
   const imagesByEntry = new Map<string, ContentImage[]>();
   for (const image of imageResult.results ?? []) {
@@ -182,11 +214,18 @@ export async function getEntries(
     images.push(image);
     imagesByEntry.set(image.entryId, images);
   }
+  const filesByEntry = new Map<string, ContentFile[]>();
+  for (const file of fileResult.results ?? []) {
+    const files = filesByEntry.get(file.entryId) ?? [];
+    files.push(file);
+    filesByEntry.set(file.entryId, files);
+  }
 
   return rows.map((row) => ({
     ...row,
     isPublished: Boolean(row.isPublished),
     images: imagesByEntry.get(row.id) ?? [],
+    files: filesByEntry.get(row.id) ?? [],
   }));
 }
 
@@ -207,6 +246,7 @@ export async function createEntry(
   sessionSlug: string,
   fields: EntryFields,
   uploads: File[],
+  documents: File[] = [],
 ) {
   await ensureContentSchema();
   const entryId = crypto.randomUUID();
@@ -225,6 +265,18 @@ export async function createEntry(
       });
       storedKeys.push(objectKey);
       imageRows.push({ imageId, objectKey, file, index });
+    }
+    const fileRows = [];
+    for (const [index, file] of documents.entries()) {
+      const fileId = crypto.randomUUID();
+      const extension = safeExtension(file);
+      const objectKey = `entries/${entryId}/files/${fileId}.${extension}`;
+      await mediaBucket().put(objectKey, file.stream(), {
+        httpMetadata: { contentType: file.type },
+        customMetadata: { originalName: file.name },
+      });
+      storedKeys.push(objectKey);
+      fileRows.push({ fileId, objectKey, file, index });
     }
 
     const statements = [
@@ -272,6 +324,16 @@ export async function createEntry(
             now,
           ),
       ),
+      ...fileRows.map(({ fileId, objectKey, file, index }) =>
+        database()
+          .prepare(
+            `INSERT INTO entry_files (
+              id, entry_id, object_key, original_name, mime_type,
+              sort_order, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          )
+          .bind(fileId, entryId, objectKey, file.name, file.type, index, now),
+      ),
     ];
     await database().batch(statements);
     return entryId;
@@ -286,6 +348,7 @@ export async function updateEntry(
   sessionSlug: string,
   fields: EntryFields,
   uploads: File[] = [],
+  documents: File[] = [],
 ) {
   await ensureContentSchema();
   const db = database();
@@ -297,6 +360,10 @@ export async function updateEntry(
 
   const orderRow = await db
     .prepare("SELECT COALESCE(MAX(sort_order), -1) AS maxSort FROM entry_images WHERE entry_id = ?")
+    .bind(entryId)
+    .first<{ maxSort: number }>();
+  const fileOrderRow = await db
+    .prepare("SELECT COALESCE(MAX(sort_order), -1) AS maxSort FROM entry_files WHERE entry_id = ?")
     .bind(entryId)
     .first<{ maxSort: number }>();
   const now = Date.now();
@@ -318,6 +385,23 @@ export async function updateEntry(
         objectKey,
         file,
         sortOrder: (orderRow?.maxSort ?? -1) + index + 1,
+      });
+    }
+    const fileRows = [];
+    for (const [index, file] of documents.entries()) {
+      const fileId = crypto.randomUUID();
+      const extension = safeExtension(file);
+      const objectKey = `entries/${entryId}/files/${fileId}.${extension}`;
+      await mediaBucket().put(objectKey, file.stream(), {
+        httpMetadata: { contentType: file.type },
+        customMetadata: { originalName: file.name },
+      });
+      storedKeys.push(objectKey);
+      fileRows.push({
+        fileId,
+        objectKey,
+        file,
+        sortOrder: (fileOrderRow?.maxSort ?? -1) + index + 1,
       });
     }
 
@@ -360,6 +444,14 @@ export async function updateEntry(
           now,
         ),
       ),
+      ...fileRows.map(({ fileId, objectKey, file, sortOrder }) =>
+        db.prepare(
+          `INSERT INTO entry_files (
+            id, entry_id, object_key, original_name, mime_type,
+            sort_order, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        ).bind(fileId, entryId, objectKey, file.name, file.type, sortOrder, now),
+      ),
     ]);
     return result.meta.changes > 0;
   } catch (error) {
@@ -383,14 +475,34 @@ export async function deleteEntry(entryId: string, sessionSlug: string) {
     )
     .bind(entryId, sessionSlug)
     .all<{ objectKey: string }>();
+  const fileResult = await db
+    .prepare(
+      `SELECT object_key AS objectKey
+      FROM entry_files
+      WHERE entry_id = ?
+        AND EXISTS (
+          SELECT 1 FROM entries
+          WHERE entries.id = entry_files.entry_id AND entries.session_slug = ?
+        )`,
+    )
+    .bind(entryId, sessionSlug)
+    .all<{ objectKey: string }>();
 
-  const [, entryResult] = await db.batch([
+  const [, , entryResult] = await db.batch([
     db.prepare(
       `DELETE FROM entry_images
       WHERE entry_id = ?
         AND EXISTS (
           SELECT 1 FROM entries
           WHERE entries.id = entry_images.entry_id AND entries.session_slug = ?
+        )`,
+    ).bind(entryId, sessionSlug),
+    db.prepare(
+      `DELETE FROM entry_files
+      WHERE entry_id = ?
+        AND EXISTS (
+          SELECT 1 FROM entries
+          WHERE entries.id = entry_files.entry_id AND entries.session_slug = ?
         )`,
     ).bind(entryId, sessionSlug),
     db.prepare(
@@ -401,7 +513,8 @@ export async function deleteEntry(entryId: string, sessionSlug: string) {
   if (entryResult.meta.changes < 1) return false;
 
   await Promise.allSettled(
-    (imageResult.results ?? []).map(({ objectKey }) => mediaBucket().delete(objectKey)),
+    [...(imageResult.results ?? []), ...(fileResult.results ?? [])]
+      .map(({ objectKey }) => mediaBucket().delete(objectKey)),
   );
   return true;
 }

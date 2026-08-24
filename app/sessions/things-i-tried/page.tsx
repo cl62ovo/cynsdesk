@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getChatGPTUser } from "../../chatgpt-auth";
-import { getEntries, isOwner } from "../../../lib/content-store";
+import { getEntries, getOwnerId, isOwner } from "../../../lib/content-store";
 import TinkeringWorkbench from "./TinkeringWorkbench";
 import "./workbench.css";
 
@@ -12,11 +12,14 @@ export const metadata: Metadata = {
 };
 
 export default async function ThingsTriedPage() {
-  const [entries, user] = await Promise.all([
+  const [entries, user, ownerId] = await Promise.all([
     getEntries("things-i-tried"),
     getChatGPTUser(),
+    getOwnerId(),
   ]);
   const owner = await isOwner(user?.userId);
 
-  return <TinkeringWorkbench entries={entries} owner={owner} />;
+  const showStudioDoor = owner || Boolean(user && !ownerId);
+
+  return <TinkeringWorkbench entries={entries} owner={owner} showStudioDoor={showStudioDoor} />;
 }
