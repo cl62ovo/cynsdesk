@@ -1,0 +1,1 @@
+CREATE INDEX `idx_entries_published_date` ON `entries` (`is_published`,`entry_date`);

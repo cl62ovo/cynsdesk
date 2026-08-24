@@ -110,6 +110,8 @@ export async function ensureContentSchema() {
         )`),
         db.prepare(`CREATE INDEX IF NOT EXISTS idx_entries_session_published_date
           ON entries(session_slug, is_published, entry_date)`),
+        db.prepare(`CREATE INDEX IF NOT EXISTS idx_entries_published_date
+          ON entries(is_published, entry_date)`),
         db.prepare(`CREATE INDEX IF NOT EXISTS idx_entry_images_entry_order
           ON entry_images(entry_id, sort_order)`),
         db.prepare(`CREATE INDEX IF NOT EXISTS idx_entry_files_entry_order
@@ -183,7 +185,61 @@ export async function getEntries(
     .bind(sessionSlug)
     .all<EntryRow>();
 
-  const rows = result.results ?? [];
+  return hydrateEntries(result.results ?? []);
+}
+
+export async function getAllEntries(
+  includeDrafts = false,
+): Promise<ContentEntry[]> {
+  await ensureContentSchema();
+  const where = includeDrafts ? "" : "WHERE is_published = 1";
+  const result = await database()
+    .prepare(
+      `SELECT id, session_slug AS sessionSlug, title, entry_date AS entryDate,
+        short_text AS shortText, long_text AS longText, note,
+        content_type AS contentType, creator, external_url AS externalUrl,
+        extra_data AS extraData,
+        is_published AS isPublished, sort_order AS sortOrder,
+        created_at AS createdAt, updated_at AS updatedAt
+      FROM entries ${where}
+      ORDER BY COALESCE(entry_date, '') DESC, created_at DESC`,
+    )
+    .all<EntryRow>();
+
+  return hydrateEntries(result.results ?? []);
+}
+
+export async function getRandomEntry(excludeId?: string): Promise<ContentEntry | null> {
+  await ensureContentSchema();
+  const select = `SELECT id, session_slug AS sessionSlug, title, entry_date AS entryDate,
+    short_text AS shortText, long_text AS longText, note,
+    content_type AS contentType, creator, external_url AS externalUrl,
+    extra_data AS extraData,
+    is_published AS isPublished, sort_order AS sortOrder,
+    created_at AS createdAt, updated_at AS updatedAt
+  FROM entries`;
+  let row = excludeId
+    ? await database()
+      .prepare(`${select} WHERE is_published = 1 AND id <> ? ORDER BY RANDOM() LIMIT 1`)
+      .bind(excludeId)
+      .first<EntryRow>()
+    : await database()
+    .prepare(
+      `${select} WHERE is_published = 1 ORDER BY RANDOM() LIMIT 1`,
+    )
+    .first<EntryRow>();
+
+  if (!row && excludeId) {
+    row = await database()
+      .prepare(`${select} WHERE is_published = 1 ORDER BY RANDOM() LIMIT 1`)
+      .first<EntryRow>();
+  }
+
+  if (!row) return null;
+  return (await hydrateEntries([row]))[0] ?? null;
+}
+
+async function hydrateEntries(rows: EntryRow[]): Promise<ContentEntry[]> {
   if (!rows.length) return [];
 
   const placeholders = rows.map(() => "?").join(", ");

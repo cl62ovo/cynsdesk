@@ -34,6 +34,7 @@ export const entries = sqliteTable(
       table.isPublished,
       table.entryDate,
     ),
+    index("idx_entries_published_date").on(table.isPublished, table.entryDate),
   ],
 );
 

@@ -35,7 +35,10 @@ test("server-renders the interactive desk cover", async () => {
   assert.match(html, /target="_top"/i);
   assert.match(html, /aria-label="Open little things I noticed"/i);
   assert.match(html, /class="plant-water-label"/i);
-  assert.match(html, /aria-label="Turn on night mode"/i);
+  assert.match(html, /aria-label="Turn the desk lamp on"/i);
+  assert.match(html, /class="living-calendar"/i);
+  assert.match(html, /aria-current="date"/i);
+  assert.match(html, /class="chance-drawer-handle"/i);
   assert.match(html, /aria-pressed="false"/i);
   assert.doesNotMatch(html, /Your site is taking shape|react-loading-skeleton|codex-preview/i);
 });
@@ -188,7 +191,7 @@ test("opens the book stack into a mixed archive of kept pages", async () => {
     ),
   ]);
 
-  assert.match(homePage, /href="\/sessions\/pages-i-kept"/);
+  assert.match(homePage, /\/sessions\/pages-i-kept/);
   assert.match(pagesPage, /getEntries\("pages-i-kept"\)/);
   assert.match(pagesPage, /PagesArchive/);
   assert.match(archive, /book → opens|book-object/);
@@ -218,7 +221,7 @@ test("opens the crumpled note into an editable thought wall", async () => {
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
 
-  assert.match(homePage, /href="\/sessions\/things-stuck-in-my-head"/);
+  assert.match(homePage, /\/sessions\/things-stuck-in-my-head/);
   assert.match(page, /getEntries\("things-stuck-in-my-head"\)/);
   assert.match(wall, /put it back/);
   assert.match(wall, /what&apos;s stuck in/);
@@ -245,7 +248,7 @@ test("turns the laptop into an evolving tinkering workbench", async () => {
     readFile(new URL("../app/sessions/things-i-tried/workbench.css", import.meta.url), "utf8"),
   ]);
 
-  assert.match(homePage, /href="\/sessions\/things-i-tried"/);
+  assert.match(homePage, /\/sessions\/things-i-tried/);
   assert.match(page, /getEntries\("things-i-tried"\)/);
   assert.match(bench, /Cynthia was just here/);
   assert.match(bench, /attempts \/ versions/);
@@ -294,4 +297,41 @@ test("gives the private workbench editor photo, link, and PDF attachments", asyn
   assert.match(schema, /export const entryFiles/);
   assert.match(migration, /CREATE TABLE `entry_files`/);
   assert.match(styles, /\.pdf-scraps/);
+});
+
+test("makes the desk a living archive with random discovery and time views", async () => {
+  const [home, store, randomApi, reflectionApi, timelinePage, timeline, styles, schema, migration] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/content-store.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/random-entry/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/reflections/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/sessions/the-box-over-time/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/sessions/the-box-over-time/TimeArchive.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
+    readFile(new URL("../drizzle/0004_dashing_patch.sql", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(home, /sessionStorage\.getItem\("cynthia-lamp"\)/);
+  assert.match(home, /curtain-control/);
+  assert.match(home, /Water the plant/);
+  assert.match(home, /Say hello to the pet frog/);
+  assert.match(home, /\/api\/random-entry/);
+  assert.match(home, /show me another/);
+  assert.match(home, /a little reflection, made from your box/);
+  assert.match(store, /export async function getAllEntries/);
+  assert.match(store, /export async function getRandomEntry/);
+  assert.match(randomApi, /getRandomEntry/);
+  assert.match(reflectionApi, /OPENAI_API_KEY/);
+  assert.match(reflectionApi, /https:\/\/api\.openai\.com\/v1\/responses/);
+  assert.match(reflectionApi, /Only Cynthia can ask the box to reflect/);
+  assert.match(timelinePage, /getAllEntries\(false\)/);
+  assert.match(timeline, /"day", "week", "month"/);
+  assert.match(timeline, /nothing left here/);
+  assert.match(timeline, /back to its room/);
+  assert.match(timeline, /granularity: view/);
+  assert.match(styles, /\.living-calendar/);
+  assert.match(styles, /\.chance-drawer-open/);
+  assert.match(schema, /idx_entries_published_date/);
+  assert.match(migration, /idx_entries_published_date/);
 });

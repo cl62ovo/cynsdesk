@@ -246,7 +246,7 @@ function EntryFields({
           </select>
         </label>
         <label>
-          <span>date <i>optional</i></span>
+          <span>date <i>optional · timeline uses the saved day if blank</i></span>
           <input type="date" name="entryDate" defaultValue={entry?.entryDate ?? ""} />
         </label>
         <label>
@@ -323,7 +323,7 @@ function EntryFields({
           </select>
         </label>
         <label>
-          <span>date <i>optional</i></span>
+          <span>date <i>optional · timeline uses the saved day if blank</i></span>
           <input type="date" name="entryDate" defaultValue={entry?.entryDate ?? ""} />
         </label>
         <label className="field-wide">
@@ -367,7 +367,7 @@ function EntryFields({
           </select>
         </label>
         <label>
-          <span>date <i>optional</i></span>
+          <span>date <i>optional · timeline uses the saved day if blank</i></span>
           <input type="date" name="entryDate" defaultValue={entry?.entryDate ?? ""} />
         </label>
         <label className="field-wide">
@@ -404,7 +404,7 @@ function EntryFields({
     return (
       <div className="studio-fields thought-fields">
         <label>
-          <span>date <i>optional</i></span>
+          <span>date <i>optional · timeline uses the saved day if blank</i></span>
           <input type="date" name="entryDate" defaultValue={entry?.entryDate ?? ""} />
         </label>
         <label>
@@ -434,7 +434,7 @@ function EntryFields({
         <input name="title" defaultValue={entry?.title ?? ""} maxLength={120} />
       </label>
       <label>
-        <span>date <i>optional</i></span>
+        <span>date <i>optional · timeline uses the saved day if blank</i></span>
         <input type="date" name="entryDate" defaultValue={entry?.entryDate ?? ""} />
       </label>
       <label className="field-wide">
