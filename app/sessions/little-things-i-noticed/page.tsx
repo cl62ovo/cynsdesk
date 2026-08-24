@@ -26,7 +26,7 @@ export default async function NoticedSessionPage() {
     <main className="noticed-session">
       <span className="session-grain" aria-hidden="true" />
       <header className="noticed-heading">
-        <a className="desk-return" href="/">
+        <a className="desk-return" href="/" target="_top">
           ← back to the desk
         </a>
         <div className="camera-doodle" aria-hidden="true">
@@ -86,7 +86,11 @@ export default async function NoticedSessionPage() {
       )}
 
       {owner && (
-        <a className="owner-add-polaroid" href="/studio/little-things-i-noticed">
+        <a
+          className="owner-add-polaroid"
+          href="/studio/little-things-i-noticed"
+          target="_top"
+        >
           <span aria-hidden="true">＋</span>
           add another noticing
         </a>

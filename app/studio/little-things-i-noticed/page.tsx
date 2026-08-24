@@ -22,14 +22,14 @@ export default async function NoticedStudioPage() {
     return (
       <main className="studio-shell">
         <header className="studio-heading">
-          <a href="/sessions/little-things-i-noticed">← leave the little studio</a>
+          <a href="/sessions/little-things-i-noticed" target="_top">← leave the little studio</a>
           <h1>behind the camera</h1>
         </header>
         <section className="claim-card">
           <span className="entry-tape" aria-hidden="true" />
           <h2>This little door is private.</h2>
           <p>Sign in with ChatGPT to check whether this desk belongs to you.</p>
-          <a href={chatGPTSignInPath(returnTo)}>sign in to the studio</a>
+          <a href={chatGPTSignInPath(returnTo)} target="_top">sign in to the studio</a>
         </section>
       </main>
     );
@@ -39,7 +39,7 @@ export default async function NoticedStudioPage() {
     return (
       <main className="studio-shell">
         <header className="studio-heading">
-          <a href="/sessions/little-things-i-noticed">← leave the little studio</a>
+          <a href="/sessions/little-things-i-noticed" target="_top">← leave the little studio</a>
           <h1>behind the camera</h1>
         </header>
         <StudioClient entries={[]} canClaim />
@@ -51,7 +51,7 @@ export default async function NoticedStudioPage() {
     return (
       <main className="studio-shell">
         <header className="studio-heading">
-          <a href="/sessions/little-things-i-noticed">← back to the photographs</a>
+          <a href="/sessions/little-things-i-noticed" target="_top">← back to the photographs</a>
           <h1>behind the camera</h1>
         </header>
         <section className="claim-card">
@@ -67,7 +67,7 @@ export default async function NoticedStudioPage() {
   return (
     <main className="studio-shell">
       <header className="studio-heading">
-        <a href="/sessions/little-things-i-noticed">← see the camera wall</a>
+        <a href="/sessions/little-things-i-noticed" target="_top">← see the camera wall</a>
         <p>private · only visible to you</p>
         <h1>behind the camera</h1>
       </header>

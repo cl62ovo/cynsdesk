@@ -27,6 +27,7 @@ test("server-renders the interactive desk cover", async () => {
   assert.doesNotMatch(html, /lamp-base-correction/);
   assert.match(html, /class="lamp-switch"/i);
   assert.match(html, /href="\/sessions\/little-things-i-noticed"/i);
+  assert.match(html, /target="_top"/i);
   assert.match(html, /aria-label="Open little things I noticed"/i);
   assert.match(html, /class="plant-water-label"/i);
   assert.match(html, /aria-label="Turn on night mode"/i);

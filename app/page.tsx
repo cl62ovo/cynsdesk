@@ -30,6 +30,7 @@ export default function Home() {
         <a
           className="desk-hotspot camera-hotspot"
           href="/sessions/little-things-i-noticed"
+          target="_top"
           aria-label="Open little things I noticed"
         >
           <span className="sr-only">little things I noticed</span>
