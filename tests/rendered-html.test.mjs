@@ -300,10 +300,11 @@ test("gives the private workbench editor photo, link, and PDF attachments", asyn
 });
 
 test("makes the desk a living archive with random discovery and time views", async () => {
-  const [home, store, memory, randomApi, frogApi, reflectionApi, timelinePage, timeline, styles, schema, migration] = await Promise.all([
+  const [home, store, memory, reflectionEngine, randomApi, frogApi, reflectionApi, timelinePage, timeline, styles, schema, migration] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../lib/content-store.ts", import.meta.url), "utf8"),
     readFile(new URL("../lib/memory-layer.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/reflection-engine.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/random-entry/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/frog-memory/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/reflections/route.ts", import.meta.url), "utf8"),
@@ -329,9 +330,11 @@ test("makes the desk a living archive with random discovery and time views", asy
   assert.match(memory, /export function monthlyMemory/);
   assert.match(randomApi, /randomMemory/);
   assert.match(frogApi, /things-i-listened-to/);
-  assert.match(reflectionApi, /OPENAI_API_KEY/);
-  assert.match(reflectionApi, /https:\/\/api\.openai\.com\/v1\/responses/);
-  assert.match(reflectionApi, /Only Cynthia can ask the box to reflect/);
+  assert.doesNotMatch(reflectionApi, /OPENAI_API_KEY|api\.openai\.com/);
+  assert.match(reflectionApi, /makeLocalConnection/);
+  assert.match(reflectionApi, /makeLocalPeriodReflection/);
+  assert.match(reflectionEngine, /LOCAL_REFLECTION_VERSION/);
+  assert.match(reflectionEngine, /The box is only pointing to their nearness/);
   assert.match(timelinePage, /getAllEntries\(false\)/);
   assert.match(timeline, /"day", "week", "month"/);
   assert.match(timeline, /nothing left here/);

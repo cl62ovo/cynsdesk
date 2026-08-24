@@ -88,7 +88,7 @@ export default function TimeArchive({ entries, initialView, initialDate, owner }
     const response = await fetch("/api/reflections", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode: "period", granularity: view, start: period.start, end: period.end, regenerate }),
+      body: JSON.stringify({ mode: "period", granularity: view, start: period.start, end: period.end, regenerate, variation: regenerate ? Date.now() : 0 }),
     });
     const result = (await response.json().catch(() => ({}))) as ReflectionResult;
     setSummaryBusy(false);
@@ -173,7 +173,7 @@ function ReflectionPaper({ view, summary, sources, sourcesOpen, stale, busy, mes
           <div className="reflection-paper-actions">
             {sources.length > 0 && <button type="button" onClick={onToggleSources}>{sourcesOpen ? "hide what this came from" : "what this came from"}</button>}
             <button type="button" onClick={onHide}>hide</button>
-            {owner && <button type="button" onClick={onRegenerate} disabled={busy}>{busy ? "looking through the box…" : "regenerate summary"}</button>}
+            {owner && <button type="button" onClick={onRegenerate} disabled={busy}>{busy ? "looking through the box…" : "find another angle"}</button>}
           </div>
           {sourcesOpen && <SourceScraps sources={sources} />}
         </div>
@@ -189,7 +189,7 @@ function ReflectionPaper({ view, summary, sources, sourcesOpen, stale, busy, mes
 }
 
 function SourceScraps({ sources }: { sources: ReflectionSource[] }) {
-  return <div className="source-scraps" aria-label="Original entries supporting this AI reflection">{sources.map((source) => (
+  return <div className="source-scraps" aria-label="Original entries supporting this reflection">{sources.map((source) => (
     <a href={`/sessions/${source.sessionSlug}`} target="_top" key={source.id}>
       <time>{shortDate(source.date)}</time><strong>{source.label}</strong><small>{source.sessionName}</small>
     </a>

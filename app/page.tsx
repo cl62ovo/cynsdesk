@@ -117,7 +117,7 @@ export default function Home() {
     const response = await fetch("/api/reflections", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode: "connection", entryId: entry.id }),
+      body: JSON.stringify({ mode: "connection", entryId: entry.id, variation: Date.now() }),
     });
     const result = (await response.json().catch(() => ({}))) as { reflection?: string; sources?: ReflectionSource[]; error?: string };
     setReflectionBusy(false);
@@ -261,7 +261,7 @@ function RandomFind({ entry, reflection, reflectionMessage, reflectionBusy, sour
       <p className="find-excerpt">{entryExcerpt(entry)}</p>
       {entry.externalUrl && <a className="find-external" href={entry.externalUrl} target="_blank" rel="noreferrer">follow the little link ↗</a>}
       <a className="find-session-link" href={`/sessions/${entry.sessionSlug}`} target="_top">put it back in its room ↗</a>
-      {reflection && <aside className="ai-reflection"><small>a little thought from the box ✦</small><p>{reflection}</p><div className="drawer-reflection-actions">{sources.length > 0 && <button type="button" onClick={onToggleSources}>{sourcesOpen ? "hide sources" : "what this came from"}</button>}<button type="button" onClick={onHideReflection}>hide</button><button type="button" onClick={() => onReflect()}>regenerate</button></div>{sourcesOpen && <div className="drawer-sources">{sources.map((source) => <a href={`/sessions/${source.sessionSlug}`} target="_top" key={source.id}><time>{source.date}</time><span>{source.label}</span></a>)}</div>}</aside>}
+      {reflection && <aside className="ai-reflection"><small>a little thought from the box's own index ✦</small><p>{reflection}</p><div className="drawer-reflection-actions">{sources.length > 0 && <button type="button" onClick={onToggleSources}>{sourcesOpen ? "hide sources" : "what this came from"}</button>}<button type="button" onClick={onHideReflection}>hide</button><button type="button" onClick={() => onReflect()}>another angle</button></div>{sourcesOpen && <div className="drawer-sources">{sources.map((source) => <a href={`/sessions/${source.sessionSlug}`} target="_top" key={source.id}><time>{source.date}</time><span>{source.label}</span></a>)}</div>}</aside>}
       {reflectionMessage && <p className="drawer-ai-message">{reflectionMessage}</p>}
       <div className="drawer-actions">
         <button type="button" onClick={() => onAnother()}>show me another</button>
