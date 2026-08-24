@@ -14,6 +14,7 @@ type Props = {
   listeningFields?: boolean;
   readingFields?: boolean;
   thoughtFields?: boolean;
+  workbenchFields?: boolean;
 };
 
 export default function StudioClient({
@@ -27,6 +28,7 @@ export default function StudioClient({
   listeningFields = false,
   readingFields = false,
   thoughtFields = false,
+  workbenchFields = false,
 }: Props) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -99,16 +101,23 @@ export default function StudioClient({
       <form className="studio-paper new-entry-form" onSubmit={(event) => save(event, "POST")}>
         <span className="entry-tape" aria-hidden="true" />
         <p className="studio-number">{freshLabel}</p>
-        <EntryFields listening={listeningFields} reading={readingFields} thoughts={thoughtFields} />
+        <EntryFields
+          listening={listeningFields}
+          reading={readingFields}
+          thoughts={thoughtFields}
+          workbench={workbenchFields}
+        />
         <label className="photo-pocket">
           <span>
-            {thoughtFields
+            {workbenchFields
+              ? "leave photos, screenshots, sketches, or references here"
+              : thoughtFields
               ? "tape up an image or a few little pictures"
               : listeningFields || readingFields
                 ? "drop a cover / image here"
                 : "drop up to 6 photos here"}
           </span>
-          <small>JPG, PNG, GIF or WebP · 8 MB each</small>
+          <small>up to 10 · JPG, PNG, GIF or WebP · 8 MB each</small>
           <input type="file" name="photos" accept="image/*" multiple />
         </label>
         <PublishField />
@@ -132,7 +141,15 @@ export default function StudioClient({
                   listening={listeningFields}
                   reading={readingFields}
                   thoughts={thoughtFields}
+                  workbench={workbenchFields}
                 />
+                {workbenchFields && (
+                  <label className="photo-pocket add-more-photos">
+                    <span>add more traces of trying</span>
+                    <small>new photos will join the ones already here</small>
+                    <input type="file" name="photos" accept="image/*" multiple />
+                  </label>
+                )}
                 {entry.images.length > 0 && (
                   <p className="kept-photos-note">
                     {entry.images.length} photo{entry.images.length === 1 ? " is" : "s are"} already tucked here.
@@ -166,12 +183,102 @@ function EntryFields({
   listening = false,
   reading = false,
   thoughts = false,
+  workbench = false,
 }: {
   entry?: ContentEntry;
   listening?: boolean;
   reading?: boolean;
   thoughts?: boolean;
+  workbench?: boolean;
 }) {
+  if (workbench) {
+    const extras = parseExtras(entry?.extraData);
+    return (
+      <div className="studio-fields workbench-fields">
+        <label>
+          <span>where is it now?</span>
+          <select name="contentType" defaultValue={entry?.contentType ?? "idea"}>
+            <option value="idea">a tiny idea · maybe someday</option>
+            <option value="trying">currently trying</option>
+            <option value="tried">tried it · whatever happened</option>
+          </select>
+        </label>
+        <label>
+          <span>what kind of mess? <i>optional</i></span>
+          <select name="workbenchKind" defaultValue={extras.workbenchKind ?? "random"}>
+            <option value="random">whatever this is</option>
+            <option value="coding">coding / web / AI</option>
+            <option value="sewing">sewing / fabric</option>
+            <option value="embroidery">embroidery</option>
+            <option value="drawing">drawing / sketching</option>
+            <option value="cooking">cooking</option>
+            <option value="craft">craft / making</option>
+          </select>
+        </label>
+        <label>
+          <span>date <i>optional</i></span>
+          <input type="date" name="entryDate" defaultValue={entry?.entryDate ?? ""} />
+        </label>
+        <label>
+          <span>current status <i>anything goes</i></span>
+          <input name="creator" defaultValue={entry?.creator ?? ""} placeholder="still figuring it out / ???" maxLength={180} />
+        </label>
+        <label className="field-wide">
+          <span>what are you trying?</span>
+          <input name="title" defaultValue={entry?.title ?? ""} placeholder="I tried making…" maxLength={180} />
+        </label>
+        <label className="field-wide">
+          <span>the first spark / quick version <i>worth keeping as it grows</i></span>
+          <textarea name="shortText" defaultValue={entry?.shortText ?? ""} rows={3} maxLength={1200} />
+        </label>
+        <label className="field-wide">
+          <span>why did this seem interesting? <i>optional</i></span>
+          <textarea name="why" defaultValue={extras.why ?? ""} rows={3} maxLength={1500} />
+        </label>
+        <label>
+          <span>materials / pieces I have <i>optional</i></span>
+          <textarea name="materialsHave" defaultValue={extras.materialsHave ?? ""} rows={4} />
+        </label>
+        <label>
+          <span>things I still need <i>optional</i></span>
+          <textarea name="materialsNeed" defaultValue={extras.materialsNeed ?? ""} rows={4} />
+        </label>
+        <label className="field-wide">
+          <span>need to figure out <i>optional</i></span>
+          <textarea name="figuringOut" defaultValue={extras.figuringOut ?? ""} rows={3} />
+        </label>
+        <label className="field-wide">
+          <span>attempts / versions <i>failed versions welcome</i></span>
+          <textarea name="attempts" defaultValue={extras.attempts ?? ""} rows={7} placeholder={'attempt #01 — I thought this would work. it did not.\n\nattempt #02 — slightly less terrible.'} />
+        </label>
+        <label className="field-wide">
+          <span>process / messy workbench notes <i>optional</i></span>
+          <textarea name="longText" defaultValue={entry?.longText ?? ""} rows={7} />
+        </label>
+        <label className="field-wide">
+          <span>next, maybe… <i>optional</i></span>
+          <textarea name="nextSteps" defaultValue={extras.nextSteps ?? ""} rows={3} />
+        </label>
+        <label className="field-wide">
+          <span>thoughts afterward / what I learned <i>optional</i></span>
+          <textarea name="reflection" defaultValue={extras.reflection ?? ""} rows={4} />
+        </label>
+        <label className="field-wide">
+          <span>note to future me <i>optional</i></span>
+          <textarea name="note" defaultValue={entry?.note ?? ""} rows={3} maxLength={1200} />
+        </label>
+        <label className="field-wide">
+          <span>one main link <i>optional</i></span>
+          <input type="url" name="externalUrl" defaultValue={entry?.externalUrl ?? ""} placeholder="https://…" maxLength={1000} />
+        </label>
+        <label className="field-wide">
+          <span>more reference links <i>one per line · optional</i></span>
+          <textarea name="referenceLinks" defaultValue={extras.referenceLinks ?? ""} rows={4} placeholder="https://…" />
+        </label>
+      </div>
+    );
+  }
+
   if (listening) {
     return (
       <div className="studio-fields listening-fields">
@@ -314,6 +421,19 @@ function EntryFields({
       </label>
     </div>
   );
+}
+
+function parseExtras(value: string | null | undefined): Record<string, string> {
+  if (!value) return {};
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return Object.fromEntries(
+      Object.entries(parsed).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
+    );
+  } catch {
+    return {};
+  }
 }
 
 function PublishField({ checked = true }: { checked?: boolean }) {

@@ -3668,3 +3668,31 @@ body {
   .thought-detail-backdrop,
   .thought-detail { animation: none; }
 }
+
+/* The open laptop on Cynthia's desk leads to the tinkering workbench. */
+.tried-hotspot {
+  left: 36.2%;
+  top: 69.4%;
+  width: 23.2%;
+  height: 16.4%;
+  border-radius: 11% 10% 16% 13%;
+  transform: rotate(.4deg);
+}
+
+.tried-hotspot::before {
+  content: "try it?";
+  position: absolute;
+  left: 37%;
+  top: -18%;
+  z-index: 2;
+  color: #995e54;
+  font: clamp(9px, 1.1vw, 14px)/1 "Comic Sans MS", "Bradley Hand", cursive;
+  opacity: 0;
+  transform: rotate(-3deg) translateY(5px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.tried-hotspot:hover::before,
+.tried-hotspot:focus-visible::before { opacity: .95; transform: rotate(1deg) translateY(0); }
+.tried-hotspot:hover::after,
+.tried-hotspot:focus-visible::after { transform: rotate(-.5deg) scale(1.025); }

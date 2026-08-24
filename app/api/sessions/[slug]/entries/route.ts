@@ -9,7 +9,7 @@ import {
 } from "../../../../../lib/content-store";
 import { getSession } from "../../../../../lib/sessions";
 
-const MAX_PHOTOS = 6;
+const MAX_PHOTOS = 10;
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
 
 export async function POST(
@@ -60,12 +60,15 @@ export async function PATCH(
   if (!entryId) return Response.json({ error: "Missing entry." }, { status: 400 });
 
   const fields = readFields(form);
-  const validationError = validate(fields, []);
+  const photos = form
+    .getAll("photos")
+    .filter((value): value is File => value instanceof File && value.size > 0);
+  const validationError = validate(fields, photos);
   if (validationError) {
     return Response.json({ error: validationError }, { status: 400 });
   }
 
-  const updated = await updateEntry(entryId, slug, fields);
+  const updated = await updateEntry(entryId, slug, fields, photos);
   if (!updated) return Response.json({ error: "Entry not found." }, { status: 404 });
   return Response.json({ ok: true });
 }
@@ -123,6 +126,22 @@ export async function PUT(
 }
 
 function readFields(form: FormData): EntryFields {
+  const workbenchExtras = Object.fromEntries(
+    [
+      "workbenchKind",
+      "why",
+      "materialsHave",
+      "materialsNeed",
+      "figuringOut",
+      "nextSteps",
+      "attempts",
+      "reflection",
+      "referenceLinks",
+    ]
+      .map((key) => [key, textValue(form, key)] as const)
+      .filter(([, value]) => value),
+  );
+
   return {
     title: textValue(form, "title"),
     entryDate: textValue(form, "entryDate"),
@@ -132,6 +151,9 @@ function readFields(form: FormData): EntryFields {
     contentType: textValue(form, "contentType"),
     creator: textValue(form, "creator"),
     externalUrl: textValue(form, "externalUrl"),
+    extraData: Object.keys(workbenchExtras).length
+      ? JSON.stringify(workbenchExtras)
+      : null,
     isPublished: form.get("isPublished") === "on",
   };
 }
@@ -144,6 +166,7 @@ function textValue(form: FormData, key: string) {
 }
 
 function validate(fields: EntryFields, photos: File[]) {
+  const hasWorkbenchText = hasMeaningfulWorkbenchData(fields.extraData);
   if (
     !fields.title &&
     !fields.shortText &&
@@ -151,6 +174,7 @@ function validate(fields: EntryFields, photos: File[]) {
     !fields.note &&
     !fields.creator &&
     !fields.externalUrl &&
+    !hasWorkbenchText &&
     photos.length === 0
   ) {
     return "Add a photo or a little bit of text first.";
@@ -161,9 +185,13 @@ function validate(fields: EntryFields, photos: File[]) {
     ![
       "album", "single", "podcast", "podcast-episode",
       "book", "article", "line", "lyric", "passage", "other",
+      "idea", "trying", "tried",
     ].includes(fields.contentType)
   ) {
     return "Choose a known item type.";
+  }
+  if (fields.extraData && fields.extraData.length > 30000) {
+    return "The workbench notes are a little too long for one object.";
   }
   if (fields.externalUrl) {
     try {
@@ -180,4 +208,16 @@ function validate(fields: EntryFields, photos: File[]) {
     if (photo.size > MAX_PHOTO_BYTES) return "Each photo must be smaller than 8 MB.";
   }
   return null;
+}
+
+function hasMeaningfulWorkbenchData(value: string | null) {
+  if (!value) return false;
+  try {
+    const parsed = JSON.parse(value) as Record<string, unknown>;
+    return Object.entries(parsed).some(
+      ([key, item]) => key !== "workbenchKind" && typeof item === "string" && item.trim(),
+    );
+  } catch {
+    return false;
+  }
 }

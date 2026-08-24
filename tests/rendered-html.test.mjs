@@ -230,3 +230,35 @@ test("opens the crumpled note into an editable thought wall", async () => {
   assert.match(styles, /\.thought-scrap\.paper-1/);
   assert.match(styles, /\.thought-detail-backdrop/);
 });
+
+test("turns the laptop into an evolving tinkering workbench", async () => {
+  const [homePage, page, bench, studio, configs, api, store, schema, migration, styles] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/sessions/things-i-tried/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/sessions/things-i-tried/TinkeringWorkbench.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/studio/little-things-i-noticed/StudioClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/illustrated-sessions.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/sessions/[slug]/entries/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/content-store.ts", import.meta.url), "utf8"),
+    readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
+    readFile(new URL("../drizzle/0002_fixed_sugar_man.sql", import.meta.url), "utf8"),
+    readFile(new URL("../app/sessions/things-i-tried/workbench.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(homePage, /href="\/sessions\/things-i-tried"/);
+  assert.match(page, /getEntries\("things-i-tried"\)/);
+  assert.match(bench, /Cynthia was just here/);
+  assert.match(bench, /attempts \/ versions/);
+  assert.match(bench, /leave it on the bench/);
+  assert.match(studio, /workbench-fields/);
+  assert.match(studio, /name="attempts"/);
+  assert.match(studio, /add more traces of trying/);
+  assert.match(configs, /editorKind: "workbench"/);
+  assert.match(api, /"idea", "trying", "tried"/);
+  assert.match(store, /extra_data AS extraData/);
+  assert.match(store, /uploads: File\[\] = \[\]/);
+  assert.match(schema, /extraData: text\("extra_data"\)/);
+  assert.match(migration, /ADD `extra_data` text/);
+  assert.match(styles, /\.tinkering-bench/);
+  assert.match(styles, /\.kind-embroidery \.object-visual/);
+});

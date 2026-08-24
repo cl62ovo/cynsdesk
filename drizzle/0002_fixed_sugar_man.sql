@@ -1,0 +1,1 @@
+ALTER TABLE `entries` ADD `extra_data` text;

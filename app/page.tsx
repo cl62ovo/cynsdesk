@@ -90,6 +90,15 @@ export default function Home() {
           <span className="sr-only">things stuck in my head</span>
         </a>
 
+        <a
+          className="desk-hotspot tried-hotspot"
+          href="/sessions/things-i-tried"
+          target="_top"
+          aria-label="Open things I tried"
+        >
+          <span className="sr-only">things I tried</span>
+        </a>
+
         <button
           className="lamp-switch"
           type="button"

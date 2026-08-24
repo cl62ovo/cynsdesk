@@ -217,6 +217,7 @@ function starter(id: string, title: string, shortText?: string): WallThought {
     contentType: null,
     creator: null,
     externalUrl: null,
+    extraData: null,
     isPublished: true,
     sortOrder: 0,
     createdAt: 0,

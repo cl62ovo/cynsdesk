@@ -22,6 +22,7 @@ export type ContentEntry = {
   contentType: string | null;
   creator: string | null;
   externalUrl: string | null;
+  extraData: string | null;
   isPublished: boolean;
   sortOrder: number;
   createdAt: number;
@@ -70,6 +71,7 @@ export async function ensureContentSchema() {
           content_type TEXT,
           creator TEXT,
           external_url TEXT,
+          extra_data TEXT,
           is_published INTEGER NOT NULL DEFAULT 1,
           sort_order INTEGER NOT NULL DEFAULT 0,
           created_at INTEGER NOT NULL,
@@ -100,6 +102,7 @@ export async function ensureContentSchema() {
         ["content_type", "ALTER TABLE entries ADD COLUMN content_type TEXT"],
         ["creator", "ALTER TABLE entries ADD COLUMN creator TEXT"],
         ["external_url", "ALTER TABLE entries ADD COLUMN external_url TEXT"],
+        ["extra_data", "ALTER TABLE entries ADD COLUMN extra_data TEXT"],
       ] as const;
       const missing = additions
         .filter(([name]) => !columns.has(name))
@@ -149,6 +152,7 @@ export async function getEntries(
       `SELECT id, session_slug AS sessionSlug, title, entry_date AS entryDate,
         short_text AS shortText, long_text AS longText, note,
         content_type AS contentType, creator, external_url AS externalUrl,
+        extra_data AS extraData,
         is_published AS isPublished, sort_order AS sortOrder,
         created_at AS createdAt, updated_at AS updatedAt
       FROM entries ${where}
@@ -195,6 +199,7 @@ export type EntryFields = {
   contentType: string | null;
   creator: string | null;
   externalUrl: string | null;
+  extraData: string | null;
   isPublished: boolean;
 };
 
@@ -227,9 +232,9 @@ export async function createEntry(
         .prepare(
           `INSERT INTO entries (
             id, session_slug, title, entry_date, short_text, long_text, note,
-            content_type, creator, external_url, is_published, sort_order,
+            content_type, creator, external_url, extra_data, is_published, sort_order,
             created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
         )
         .bind(
           entryId,
@@ -242,6 +247,7 @@ export async function createEntry(
           fields.contentType,
           fields.creator,
           fields.externalUrl,
+          fields.extraData,
           fields.isPublished ? 1 : 0,
           now,
           now,
@@ -279,31 +285,87 @@ export async function updateEntry(
   entryId: string,
   sessionSlug: string,
   fields: EntryFields,
+  uploads: File[] = [],
 ) {
   await ensureContentSchema();
-  const result = await database()
-    .prepare(
-      `UPDATE entries SET title = ?, entry_date = ?, short_text = ?,
-        long_text = ?, note = ?, content_type = ?, creator = ?, external_url = ?,
-        is_published = ?, updated_at = ?
-      WHERE id = ? AND session_slug = ?`,
-    )
-    .bind(
-      fields.title,
-      fields.entryDate,
-      fields.shortText,
-      fields.longText,
-      fields.note,
-      fields.contentType,
-      fields.creator,
-      fields.externalUrl,
-      fields.isPublished ? 1 : 0,
-      Date.now(),
-      entryId,
-      sessionSlug,
-    )
-    .run();
-  return result.meta.changes > 0;
+  const db = database();
+  const existing = await db
+    .prepare("SELECT id FROM entries WHERE id = ? AND session_slug = ?")
+    .bind(entryId, sessionSlug)
+    .first<{ id: string }>();
+  if (!existing) return false;
+
+  const orderRow = await db
+    .prepare("SELECT COALESCE(MAX(sort_order), -1) AS maxSort FROM entry_images WHERE entry_id = ?")
+    .bind(entryId)
+    .first<{ maxSort: number }>();
+  const now = Date.now();
+  const storedKeys: string[] = [];
+
+  try {
+    const imageRows = [];
+    for (const [index, file] of uploads.entries()) {
+      const imageId = crypto.randomUUID();
+      const extension = safeExtension(file);
+      const objectKey = `entries/${entryId}/${imageId}.${extension}`;
+      await mediaBucket().put(objectKey, file.stream(), {
+        httpMetadata: { contentType: file.type },
+        customMetadata: { originalName: file.name },
+      });
+      storedKeys.push(objectKey);
+      imageRows.push({
+        imageId,
+        objectKey,
+        file,
+        sortOrder: (orderRow?.maxSort ?? -1) + index + 1,
+      });
+    }
+
+    const [result] = await db.batch([
+      db.prepare(
+        `UPDATE entries SET title = ?, entry_date = ?, short_text = ?,
+          long_text = ?, note = ?, content_type = ?, creator = ?, external_url = ?,
+          extra_data = ?, is_published = ?, updated_at = ?
+        WHERE id = ? AND session_slug = ?`,
+      ).bind(
+        fields.title,
+        fields.entryDate,
+        fields.shortText,
+        fields.longText,
+        fields.note,
+        fields.contentType,
+        fields.creator,
+        fields.externalUrl,
+        fields.extraData,
+        fields.isPublished ? 1 : 0,
+        now,
+        entryId,
+        sessionSlug,
+      ),
+      ...imageRows.map(({ imageId, objectKey, file, sortOrder }) =>
+        db.prepare(
+          `INSERT INTO entry_images (
+            id, entry_id, object_key, original_name, mime_type,
+            alt_text, caption, sort_order, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ).bind(
+          imageId,
+          entryId,
+          objectKey,
+          file.name,
+          file.type,
+          fields.title,
+          fields.note,
+          sortOrder,
+          now,
+        ),
+      ),
+    ]);
+    return result.meta.changes > 0;
+  } catch (error) {
+    await Promise.allSettled(storedKeys.map((key) => mediaBucket().delete(key)));
+    throw error;
+  }
 }
 
 export async function deleteEntry(entryId: string, sessionSlug: string) {

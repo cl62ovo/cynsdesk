@@ -79,6 +79,7 @@ export default async function IllustratedStudioPage({
         listeningFields={config.editorKind === "listening"}
         readingFields={config.editorKind === "reading"}
         thoughtFields={config.editorKind === "thoughts"}
+        workbenchFields={config.editorKind === "workbench"}
       />
     </StudioFrame>
   );

@@ -20,6 +20,7 @@ export const entries = sqliteTable(
     contentType: text("content_type"),
     creator: text("creator"),
     externalUrl: text("external_url"),
+    extraData: text("extra_data"),
     isPublished: integer("is_published", { mode: "boolean" })
       .notNull()
       .default(true),

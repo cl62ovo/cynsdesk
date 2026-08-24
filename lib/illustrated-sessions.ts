@@ -5,7 +5,8 @@ export type IllustratedSessionConfig = {
     | "things-i-dont-want-to-forget"
     | "things-i-listened-to"
     | "pages-i-kept"
-    | "things-stuck-in-my-head";
+    | "things-stuck-in-my-head"
+    | "things-i-tried";
   name: string;
   theme: string;
   kicker: string;
@@ -18,10 +19,26 @@ export type IllustratedSessionConfig = {
   collectionLabel: string;
   itemNoun: string;
   storageLabel: string;
-  editorKind?: "listening" | "reading" | "thoughts";
+  editorKind?: "listening" | "reading" | "thoughts" | "workbench";
 };
 
 export const illustratedSessions: IllustratedSessionConfig[] = [
+  {
+    slug: "things-i-tried",
+    name: "things I tried",
+    theme: "workbench-session",
+    kicker: "from the open laptop",
+    intro: "things I tried, things I’m trying, and tiny ideas that might become something",
+    emptyText: "the workbench is waiting for its first mess.",
+    emptyHint: "curiosity can leave something here.",
+    addLabel: "try something?",
+    studioTitle: "under the workbench papers",
+    freshLabel: "a new spark, attempt, or beautiful mess",
+    collectionLabel: "things already living on the workbench",
+    itemNoun: "attempt",
+    storageLabel: "the workbench",
+    editorKind: "workbench",
+  },
   {
     slug: "things-stuck-in-my-head",
     name: "things stuck in my head",
