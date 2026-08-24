@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1787548616474,
+      "tag": "0000_redundant_oracle",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1787561426165,
+      "tag": "0001_keen_the_phantom",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1787566608976,
+      "tag": "0002_fixed_sugar_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1787568501909,
+      "tag": "0003_strange_northstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1787569691606,
+      "tag": "0004_dashing_patch",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1787579636635,
+      "tag": "0005_shallow_tomas",
+      "breakpoints": true
+    }
+  ]
+}
