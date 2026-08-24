@@ -5,13 +5,27 @@ import type { ContentEntry } from "../lib/content-store";
 import { entryDay, entryExcerpt, entryLabel, sessionTone } from "../lib/timeline";
 import { getSession } from "../lib/sessions";
 
-const frogReplies = ["ribbit?", "tiny hop!", "she blinked first.", "the frog approves.", "…ribbit."];
+type FrogMood = { behavior: string; message: string };
+type ReflectionSource = { id: string; sessionSlug: string; sessionName: string; date: string; label: string; excerpt: string };
+
+const frogBehaviors = [
+  { behavior: "croak", message: "…ribbit." },
+  { behavior: "blink", message: "blink." },
+  { behavior: "hop", message: "tiny hop!" },
+  { behavior: "turn", message: "looking at the other frog." },
+  { behavior: "hide", message: "not here." },
+  { behavior: "sleepy", message: "five more lily-pad minutes…" },
+  { behavior: "excited", message: "!!!" },
+  { behavior: "sing", message: "♪ la la la… ♪" },
+  { behavior: "remember", message: "the box smells familiar." },
+];
 
 export default function Home() {
   const [lampOn, setLampOn] = useState(false);
-  const [curtainOpen, setCurtainOpen] = useState(false);
+  const [timePhase, setTimePhase] = useState("daytime");
   const [plantWatered, setPlantWatered] = useState(false);
-  const [frogReply, setFrogReply] = useState("");
+  const [frogOne, setFrogOne] = useState<FrogMood | null>(null);
+  const [frogTwo, setFrogTwo] = useState<FrogMood | null>(null);
   const [paperOpen, setPaperOpen] = useState(false);
   const [keyMoved, setKeyMoved] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -21,12 +35,16 @@ export default function Home() {
   const [reflection, setReflection] = useState("");
   const [reflectionMessage, setReflectionMessage] = useState("");
   const [reflectionBusy, setReflectionBusy] = useState(false);
+  const [reflectionSources, setReflectionSources] = useState<ReflectionSource[]>([]);
+  const [reflectionSourcesOpen, setReflectionSourcesOpen] = useState(false);
 
   useEffect(() => {
     window.queueMicrotask(() => {
       setLampOn(sessionStorage.getItem("cynthia-lamp") === "on");
-      setCurtainOpen(sessionStorage.getItem("cynthia-curtain") === "open");
+      setTimePhase(localTimePhase());
     });
+    const timer = window.setInterval(() => setTimePhase(localTimePhase()), 60_000);
+    return () => window.clearInterval(timer);
   }, []);
 
   function remember(key: string, value: string) {
@@ -40,23 +58,29 @@ export default function Home() {
     });
   }
 
-  function toggleCurtain() {
-    setCurtainOpen((current) => {
-      remember("cynthia-curtain", current ? "closed" : "open");
-      return !current;
-    });
-  }
-
   function waterPlant() {
     setPlantWatered(false);
     window.setTimeout(() => setPlantWatered(true), 10);
     window.setTimeout(() => setPlantWatered(false), 1800);
   }
 
-  function greetFrog() {
-    const next = frogReplies[Math.floor(Math.random() * frogReplies.length)];
-    setFrogReply(next === frogReply ? "a second tiny hop!" : next);
-    window.setTimeout(() => setFrogReply(""), 2300);
+  async function greetFrog(which: 1 | 2) {
+    const chosen = frogBehaviors[Math.floor(Math.random() * frogBehaviors.length)];
+    const setter = which === 1 ? setFrogOne : setFrogTwo;
+    const otherSetter = which === 1 ? setFrogTwo : setFrogOne;
+    setter(chosen);
+    if (chosen.behavior === "croak") playTinySound("croak");
+    if (chosen.behavior === "sing") playTinySound("hum");
+    if (chosen.behavior === "sing" || chosen.behavior === "remember") {
+      const response = await fetch(`/api/frog-memory?mode=${chosen.behavior}`, { cache: "no-store" });
+      const result = (await response.json().catch(() => ({}))) as { memory?: string | null };
+      if (result.memory) setter({ ...chosen, message: result.memory });
+    }
+    if (Math.random() < .32) {
+      window.setTimeout(() => otherSetter({ behavior: "turn", message: which === 1 ? "frog two noticed." : "frog one is listening." }), 260);
+      window.setTimeout(() => otherSetter(null), 2350);
+    }
+    window.setTimeout(() => setter(null), 2800);
   }
 
   async function pullFromDrawer() {
@@ -64,6 +88,8 @@ export default function Home() {
     setDrawerMessage("");
     setReflection("");
     setReflectionMessage("");
+    setReflectionSources([]);
+    setReflectionSourcesOpen(false);
     const query = new URLSearchParams({ turn: String(Date.now()) });
     if (entry) query.set("exclude", entry.id);
     const response = await fetch(`/api/random-entry?${query}`, { cache: "no-store" });
@@ -93,16 +119,19 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ mode: "connection", entryId: entry.id }),
     });
-    const result = (await response.json().catch(() => ({}))) as { reflection?: string; error?: string };
+    const result = (await response.json().catch(() => ({}))) as { reflection?: string; sources?: ReflectionSource[]; error?: string };
     setReflectionBusy(false);
-    if (result.reflection) setReflection(result.reflection);
+    if (result.reflection) {
+      setReflection(result.reflection);
+      setReflectionSources(result.sources ?? []);
+    }
     else setReflectionMessage(result.error || "the box stayed quiet this time.");
   }
 
   return (
-    <main className={`cover-shell${lampOn ? " night-mode" : ""}`}>
+    <main className={`cover-shell time-${timePhase}${lampOn ? " lamp-on" : ""}`}>
       <section
-        className={`reference-cover${curtainOpen ? " curtain-open" : ""}${plantWatered ? " plant-watered" : ""}${drawerOpen ? " chance-drawer-open" : ""}`}
+        className={`reference-cover${plantWatered ? " plant-watered" : ""}${drawerOpen ? " chance-drawer-open" : ""}`}
         aria-label="Cynthia 的桌面：一个会回应、会记得时间的手绘收藏盒"
       >
         <img
@@ -113,13 +142,7 @@ export default function Home() {
 
         <span className="night-wash" aria-hidden="true" />
         <span className="lamp-glow" aria-hidden="true" />
-
-        <button className="curtain-control" type="button" onClick={toggleCurtain} aria-pressed={curtainOpen} aria-label={curtainOpen ? "Close the curtain" : "Open the curtain"}>
-          <span className="curtain-window-reveal" aria-hidden="true" />
-          <span className="curtain-panel curtain-panel-left" aria-hidden="true" />
-          <span className="curtain-panel curtain-panel-right" aria-hidden="true" />
-          <small>{curtainOpen ? "close" : "open"}</small>
-        </button>
+        <span className="window-time-scene" aria-hidden="true"><i className="window-moon" /><i className="window-stars">· ✦ ·</i></span>
 
         <DeskCalendar />
 
@@ -129,8 +152,11 @@ export default function Home() {
         </button>
         <span className="old-water-label-cover" aria-hidden="true" />
 
-        <button className={`frog-control${frogReply ? " frog-reacting" : ""}`} type="button" onClick={greetFrog} aria-label="Say hello to the pet frog">
-          <span className="frog-reply" role="status">{frogReply}</span>
+        <button className={`frog-control frog-one${frogOne ? ` frog-reacting frog-${frogOne.behavior}` : ""}`} type="button" onClick={() => void greetFrog(1)} aria-label="Say hello to frog one">
+          <span className="frog-reply" role="status">{frogOne?.message}</span>
+        </button>
+        <button className={`frog-control frog-two${frogTwo ? ` frog-reacting frog-${frogTwo.behavior}` : ""}`} type="button" onClick={() => void greetFrog(2)} aria-label="Say hello to frog two">
+          <span className="frog-reply" role="status">{frogTwo?.message}</span>
         </button>
 
         <button className={`kind-note-control${paperOpen ? " note-unfolded" : ""}`} type="button" onClick={() => setPaperOpen((value) => !value)} aria-label="Unfold the little kindness note">
@@ -154,7 +180,7 @@ export default function Home() {
         </button>
 
         <button className="chance-drawer-handle" type="button" onClick={toggleDrawer} aria-expanded={drawerOpen} aria-controls="chance-drawer-find">
-          <span>{drawerOpen ? "put it back" : "show me sth"}</span>
+          <span className="sr-only">{drawerOpen ? "put it back" : "show me sth"}</span>
           <small>{drawerOpen ? "close the drawer" : "pull gently"}</small>
         </button>
 
@@ -162,9 +188,9 @@ export default function Home() {
           <section className="drawer-find" id="chance-drawer-find" aria-live="polite">
             <span className="drawer-string" aria-hidden="true" />
             {drawerBusy ? (
-              <p className="drawer-waiting">rummaging quietly…</p>
+              <p className="drawer-waiting">looking through the box… <span aria-hidden="true">▱ ▰ ▱</span></p>
             ) : entry ? (
-              <RandomFind entry={entry} reflection={reflection} reflectionMessage={reflectionMessage} reflectionBusy={reflectionBusy} onAnother={pullFromDrawer} onReflect={askForConnection} onClose={() => setDrawerOpen(false)} />
+              <RandomFind entry={entry} reflection={reflection} reflectionMessage={reflectionMessage} reflectionBusy={reflectionBusy} sources={reflectionSources} sourcesOpen={reflectionSourcesOpen} onToggleSources={() => setReflectionSourcesOpen((value) => !value)} onHideReflection={() => { setReflection(""); setReflectionSourcesOpen(false); }} onAnother={pullFromDrawer} onReflect={askForConnection} onClose={() => setDrawerOpen(false)} />
             ) : (
               <p className="drawer-waiting">{drawerMessage || "nothing came loose this time."}</p>
             )}
@@ -172,7 +198,7 @@ export default function Home() {
         )}
 
         <span className="sr-only" role="status" aria-live="polite">
-          {lampOn ? "The desk lamp is on" : "The desk lamp is off"}. {curtainOpen ? "The curtain is open" : "The curtain is closed"}.
+          {lampOn ? "The desk lamp is on" : "The desk lamp is off"}. Outside the window it is {timePhase.replace("-", " ")}.
         </span>
       </section>
     </main>
@@ -224,22 +250,22 @@ function DeskCalendar() {
   );
 }
 
-function RandomFind({ entry, reflection, reflectionMessage, reflectionBusy, onAnother, onReflect, onClose }: { entry: ContentEntry; reflection: string; reflectionMessage: string; reflectionBusy: boolean; onAnother: () => void; onReflect: () => void; onClose: () => void }) {
+function RandomFind({ entry, reflection, reflectionMessage, reflectionBusy, sources, sourcesOpen, onToggleSources, onHideReflection, onAnother, onReflect, onClose }: { entry: ContentEntry; reflection: string; reflectionMessage: string; reflectionBusy: boolean; sources: ReflectionSource[]; sourcesOpen: boolean; onToggleSources: () => void; onHideReflection: () => void; onAnother: () => void; onReflect: () => void; onClose: () => void }) {
   const session = getSession(entry.sessionSlug);
   return (
     <article className={`random-find random-find-${sessionTone(entry.sessionSlug)}`}>
-      <p className="find-origin">pulled from · {session?.name || entry.sessionSlug}</p>
+      <p className="find-origin">from your box · {session?.name || entry.sessionSlug}</p>
       {entry.images[0] && <figure><img src={`/media/${entry.images[0].objectKey}`} alt={entry.images[0].altText || entryLabel(entry)} /></figure>}
       <time dateTime={entryDay(entry)}>{formatLongDate(entryDay(entry))}</time>
       <h2>{entryLabel(entry)}</h2>
       <p className="find-excerpt">{entryExcerpt(entry)}</p>
       {entry.externalUrl && <a className="find-external" href={entry.externalUrl} target="_blank" rel="noreferrer">follow the little link ↗</a>}
       <a className="find-session-link" href={`/sessions/${entry.sessionSlug}`} target="_top">put it back in its room ↗</a>
-      {reflection && <aside className="ai-reflection"><small>a little reflection, made from your box ✦</small><p>{reflection}</p><button type="button" onClick={() => onReflect()}>regenerate</button></aside>}
+      {reflection && <aside className="ai-reflection"><small>a little thought from the box ✦</small><p>{reflection}</p><div className="drawer-reflection-actions">{sources.length > 0 && <button type="button" onClick={onToggleSources}>{sourcesOpen ? "hide sources" : "what this came from"}</button>}<button type="button" onClick={onHideReflection}>hide</button><button type="button" onClick={() => onReflect()}>regenerate</button></div>{sourcesOpen && <div className="drawer-sources">{sources.map((source) => <a href={`/sessions/${source.sessionSlug}`} target="_top" key={source.id}><time>{source.date}</time><span>{source.label}</span></a>)}</div>}</aside>}
       {reflectionMessage && <p className="drawer-ai-message">{reflectionMessage}</p>}
       <div className="drawer-actions">
         <button type="button" onClick={() => onAnother()}>show me another</button>
-        {!reflection && <button type="button" onClick={() => onReflect()} disabled={reflectionBusy}>{reflectionBusy ? "noticing…" : "a little connection ✦"}</button>}
+        {!reflection && <button type="button" onClick={() => onReflect()} disabled={reflectionBusy}>{reflectionBusy ? "looking through the box…" : "a little connection ✦"}</button>}
         <button type="button" onClick={onClose}>put it back</button>
       </div>
     </article>
@@ -258,4 +284,31 @@ function dateString(year: number, month: number, day: number) {
 
 function formatLongDate(value: string) {
   return new Intl.DateTimeFormat("en", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`));
+}
+
+function localTimePhase() {
+  const now = new Date();
+  const hour = now.getHours() + now.getMinutes() / 60;
+  if (hour >= 5 && hour < 8) return "early-morning";
+  if (hour >= 8 && hour < 17.5) return "daytime";
+  if (hour >= 17.5 && hour < 20) return "evening";
+  return "night";
+}
+
+function playTinySound(kind: "croak" | "hum") {
+  const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContextClass) return;
+  const context = new AudioContextClass();
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = kind === "croak" ? "sawtooth" : "sine";
+  oscillator.frequency.setValueAtTime(kind === "croak" ? 118 : 330, context.currentTime);
+  if (kind === "croak") oscillator.frequency.exponentialRampToValueAtTime(78, context.currentTime + .13);
+  else oscillator.frequency.linearRampToValueAtTime(392, context.currentTime + .19);
+  gain.gain.setValueAtTime(.0001, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(kind === "croak" ? .035 : .018, context.currentTime + .02);
+  gain.gain.exponentialRampToValueAtTime(.0001, context.currentTime + (kind === "croak" ? .18 : .28));
+  oscillator.connect(gain); gain.connect(context.destination);
+  oscillator.start(); oscillator.stop(context.currentTime + (kind === "croak" ? .2 : .3));
+  oscillator.addEventListener("ended", () => void context.close(), { once: true });
 }

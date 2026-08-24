@@ -300,28 +300,35 @@ test("gives the private workbench editor photo, link, and PDF attachments", asyn
 });
 
 test("makes the desk a living archive with random discovery and time views", async () => {
-  const [home, store, randomApi, reflectionApi, timelinePage, timeline, styles, schema, migration] = await Promise.all([
+  const [home, store, memory, randomApi, frogApi, reflectionApi, timelinePage, timeline, styles, schema, migration] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../lib/content-store.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/memory-layer.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/random-entry/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/frog-memory/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/reflections/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/sessions/the-box-over-time/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/sessions/the-box-over-time/TimeArchive.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
-    readFile(new URL("../drizzle/0004_dashing_patch.sql", import.meta.url), "utf8"),
+    readFile(new URL("../drizzle/0005_shallow_tomas.sql", import.meta.url), "utf8"),
   ]);
 
   assert.match(home, /sessionStorage\.getItem\("cynthia-lamp"\)/);
-  assert.match(home, /curtain-control/);
+  assert.doesNotMatch(home, /curtain-control|toggleCurtain/);
+  assert.match(home, /window-time-scene/);
   assert.match(home, /Water the plant/);
-  assert.match(home, /Say hello to the pet frog/);
+  assert.match(home, /Say hello to frog one/);
+  assert.match(home, /Say hello to frog two/);
   assert.match(home, /\/api\/random-entry/);
   assert.match(home, /show me another/);
-  assert.match(home, /a little reflection, made from your box/);
+  assert.match(home, /a little thought from the box/);
   assert.match(store, /export async function getAllEntries/);
-  assert.match(store, /export async function getRandomEntry/);
-  assert.match(randomApi, /getRandomEntry/);
+  assert.match(store, /export async function saveMemoryRecap/);
+  assert.match(memory, /export function relatedMemories/);
+  assert.match(memory, /export function monthlyMemory/);
+  assert.match(randomApi, /randomMemory/);
+  assert.match(frogApi, /things-i-listened-to/);
   assert.match(reflectionApi, /OPENAI_API_KEY/);
   assert.match(reflectionApi, /https:\/\/api\.openai\.com\/v1\/responses/);
   assert.match(reflectionApi, /Only Cynthia can ask the box to reflect/);
@@ -330,8 +337,10 @@ test("makes the desk a living archive with random discovery and time views", asy
   assert.match(timeline, /nothing left here/);
   assert.match(timeline, /back to its room/);
   assert.match(timeline, /granularity: view/);
+  assert.match(timeline, /see everything from this month/);
+  assert.match(timeline, /what this came from/);
   assert.match(styles, /\.living-calendar/);
   assert.match(styles, /\.chance-drawer-open/);
-  assert.match(schema, /idx_entries_published_date/);
-  assert.match(migration, /idx_entries_published_date/);
+  assert.match(schema, /memoryRecaps/);
+  assert.match(migration, /CREATE TABLE `memory_recaps`/);
 });

@@ -1,4 +1,4 @@
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const siteOwner = sqliteTable("site_owner", {
   id: integer("id").primaryKey(),
@@ -70,4 +70,23 @@ export const entryFiles = sqliteTable(
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
   (table) => [index("idx_entry_files_entry_order").on(table.entryId, table.sortOrder)],
+);
+
+export const memoryRecaps = sqliteTable(
+  "memory_recaps",
+  {
+    id: text("id").primaryKey(),
+    granularity: text("granularity").notNull(),
+    periodKey: text("period_key").notNull(),
+    startDate: text("start_date").notNull(),
+    endDate: text("end_date").notNull(),
+    contentFingerprint: text("content_fingerprint").notNull(),
+    reflection: text("reflection").notNull(),
+    evidenceEntryIds: text("evidence_entry_ids").notNull(),
+    generatedAt: integer("generated_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_memory_recaps_period").on(table.granularity, table.periodKey),
+  ],
 );

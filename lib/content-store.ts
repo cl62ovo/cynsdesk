@@ -40,6 +40,19 @@ export type ContentEntry = {
   files: ContentFile[];
 };
 
+export type MemoryRecap = {
+  id: string;
+  granularity: "week" | "month" | "year";
+  periodKey: string;
+  startDate: string;
+  endDate: string;
+  contentFingerprint: string;
+  reflection: string;
+  evidenceEntryIds: string[];
+  generatedAt: number;
+  updatedAt: number;
+};
+
 type EntryRow = Omit<ContentEntry, "images" | "files" | "isPublished"> & {
   isPublished: number;
 };
@@ -108,6 +121,18 @@ export async function ensureContentSchema() {
           sort_order INTEGER NOT NULL DEFAULT 0,
           created_at INTEGER NOT NULL
         )`),
+        db.prepare(`CREATE TABLE IF NOT EXISTS memory_recaps (
+          id TEXT PRIMARY KEY,
+          granularity TEXT NOT NULL,
+          period_key TEXT NOT NULL,
+          start_date TEXT NOT NULL,
+          end_date TEXT NOT NULL,
+          content_fingerprint TEXT NOT NULL,
+          reflection TEXT NOT NULL,
+          evidence_entry_ids TEXT NOT NULL,
+          generated_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )`),
         db.prepare(`CREATE INDEX IF NOT EXISTS idx_entries_session_published_date
           ON entries(session_slug, is_published, entry_date)`),
         db.prepare(`CREATE INDEX IF NOT EXISTS idx_entries_published_date
@@ -116,6 +141,8 @@ export async function ensureContentSchema() {
           ON entry_images(entry_id, sort_order)`),
         db.prepare(`CREATE INDEX IF NOT EXISTS idx_entry_files_entry_order
           ON entry_files(entry_id, sort_order)`),
+        db.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS idx_memory_recaps_period
+          ON memory_recaps(granularity, period_key)`),
       ]);
 
       const columnResult = await db
@@ -237,6 +264,62 @@ export async function getRandomEntry(excludeId?: string): Promise<ContentEntry |
 
   if (!row) return null;
   return (await hydrateEntries([row]))[0] ?? null;
+}
+
+export async function getMemoryRecap(granularity: "week" | "month" | "year", periodKey: string) {
+  await ensureContentSchema();
+  const row = await database()
+    .prepare(`SELECT id, granularity, period_key AS periodKey,
+      start_date AS startDate, end_date AS endDate,
+      content_fingerprint AS contentFingerprint, reflection,
+      evidence_entry_ids AS evidenceEntryIds,
+      generated_at AS generatedAt, updated_at AS updatedAt
+      FROM memory_recaps WHERE granularity = ? AND period_key = ?`)
+    .bind(granularity, periodKey)
+    .first<Omit<MemoryRecap, "evidenceEntryIds"> & { evidenceEntryIds: string }>();
+  if (!row) return null;
+  return { ...row, evidenceEntryIds: safeIds(row.evidenceEntryIds) } satisfies MemoryRecap;
+}
+
+export async function saveMemoryRecap(recap: Omit<MemoryRecap, "id" | "generatedAt" | "updatedAt">) {
+  await ensureContentSchema();
+  const now = Date.now();
+  const existing = await getMemoryRecap(recap.granularity, recap.periodKey);
+  const id = existing?.id ?? crypto.randomUUID();
+  await database().prepare(`INSERT INTO memory_recaps (
+    id, granularity, period_key, start_date, end_date, content_fingerprint,
+    reflection, evidence_entry_ids, generated_at, updated_at
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ON CONFLICT(granularity, period_key) DO UPDATE SET
+    start_date = excluded.start_date,
+    end_date = excluded.end_date,
+    content_fingerprint = excluded.content_fingerprint,
+    reflection = excluded.reflection,
+    evidence_entry_ids = excluded.evidence_entry_ids,
+    updated_at = excluded.updated_at`)
+    .bind(
+      id,
+      recap.granularity,
+      recap.periodKey,
+      recap.startDate,
+      recap.endDate,
+      recap.contentFingerprint,
+      recap.reflection,
+      JSON.stringify(recap.evidenceEntryIds),
+      existing?.generatedAt ?? now,
+      now,
+    )
+    .run();
+  return getMemoryRecap(recap.granularity, recap.periodKey);
+}
+
+function safeIds(value: string) {
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
 }
 
 async function hydrateEntries(rows: EntryRow[]): Promise<ContentEntry[]> {
